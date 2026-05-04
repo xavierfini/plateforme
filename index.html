@@ -101,6 +101,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline
 }
 .time-day {
   font-family: 'Clash Display', sans-serif;
@@ -111,6 +112,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline
 }
 
 /* Quick todo */
@@ -378,9 +380,8 @@
     <!-- Clock -->
     <div class="time-card fade-in" style="animation-delay:.1s">
       <div class="time-clock" id="clock">00:00:00</div>
-      <div class="time-day" id="weekday">
-          <div class="time-date" id="date-full"></div>
-      </div>
+      <div class="time-day" id="weekday"></div>
+      <div class="time-date" id="date-full"></div>
     </div>
 
     <!-- Quick Tasks -->
