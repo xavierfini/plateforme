@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyHub — Focus Pomodoro</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.pomo-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Main timer */
+.timer-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.timer-card::before {
+  content: '';
+  position: absolute;
+  top: -80px; left: 50%; transform: translateX(-50%);
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,61,130,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Mode tabs */
+.mode-tabs {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 4px;
+  margin-bottom: 36px;
+}
+.mode-tab {
+  padding: 8px 20px;
+  border-radius: 50px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.mode-tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.mode-tab.active.work { color: var(--pink); }
+.mode-tab.active.short { color: var(--green); }
+.mode-tab.active.long { color: var(--cyan); }
+
+/* SVG Ring */
+.ring-wrap {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  margin: 0 auto 28px;
+}
+.ring-svg {
+  width: 260px; height: 260px;
+  transform: rotate(-90deg);
+}
+.ring-track {
+  fill: none;
+  stroke: var(--surface2);
+  stroke-width: 10;
+}
+.ring-fill {
+  fill: none;
+  stroke: var(--pink);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 691;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear, stroke 0.3s;
+}
+.ring-inner {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.ring-time {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -3px;
+  line-height: 1;
+  color: var(--pink);
+  transition: color 0.3s;
+}
+.ring-mode-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-weight: 500;
+}
+.ring-session-count {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* Task for this session */
+.current-task-display {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.current-task-display:hover { background: var(--border); color: var(--text); }
+.current-task-text { flex: 1; font-weight: 500; }
+
+/* Controls */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.ctrl-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  transition: all 0.15s;
+}
+.ctrl-btn:hover { background: var(--border); color: var(--text); }
+.ctrl-btn.main {
+  width: 72px; height: 72px;
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #000;
+  font-size: 28px;
+  box-shadow: 0 4px 20px rgba(255,61,130,0.4);
+}
+.ctrl-btn.main:hover { filter: brightness(1.1); transform: scale(1.05); }
+.ctrl-btn.main.running { background: var(--surface2); border-color: var(--border); color: var(--pink); box-shadow: none; }
+.ctrl-btn.main.running:hover { background: var(--border); }
+
+/* Sound toggle */
+.sound-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.toggle-switch {
+  width: 36px; height: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+.toggle-switch.on { background: var(--pink); border-color: var(--pink); }
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  background: white;
+  border-radius: 50%;
+  top: 2px; left: 2px;
+  transition: left 0.2s;
+}
+.toggle-switch.on::after { left: 18px; }
+
+/* Sidebar */
+.pomo-sidebar {}
+
+/* Session log */
+.session-log { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+.session-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+.session-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.session-label { flex: 1; font-weight: 500; }
+.session-time { color: var(--text-dim); }
+.session-dur { color: var(--text-muted); font-weight: 600; }
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat-item {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+}
+.stat-val {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+}
+.stat-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+/* Settings */
+.settings-grid { display: flex; flex-direction: column; gap: 12px; }
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.setting-label { color: var(--text-muted); }
+.setting-input {
+  width: 72px;
+  text-align: center;
+  padding: 6px 10px !important;
+}
+
+/* Progress dots */
+.session-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.session-dot-item {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+.session-dot-item.done { background: var(--pink); border-color: var(--pink); }
+.session-dot-item.break { background: var(--green); border-color: var(--green); }
+
+/* Motivational message */
+.motivation-msg {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  min-height: 18px;
+  transition: opacity 0.3s;
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">S</a>
+  <a class="nav-link" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-label">Board</span>
+  </a>
+  <a class="nav-link" href="agenda.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="nav-label">Agenda</span>
+  </a>
+  <a class="nav-link" href="tasks.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span class="nav-label">Tâches</span>
+  </a>
+  <a class="nav-link" href="notes.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span class="nav-label">Notes</span>
+  </a>
+  <a class="nav-link active" href="pomodoro.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span class="nav-label">Focus</span>
+  </a>
+  <a class="nav-link" href="carnet.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    <span class="nav-label">Carnet</span>
+  </a>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Focus Pomodoro</h1>
+      <p class="page-subtitle">Travaille par intervalles, reste dans la zone 🎯</p>
+    </div>
+  </div>
+
+  <div class="pomo-layout">
+    <!-- Timer -->
+    <div class="timer-card fade-in">
+      <!-- Mode tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active work" onclick="setMode('work')">🍅 Travail</button>
+        <button class="mode-tab short" onclick="setMode('short')">☕ Pause courte</button>
+        <button class="mode-tab long" onclick="setMode('long')">🛋 Pause longue</button>
+      </div>
+
+      <!-- Task for session -->
+      <div class="current-task-display" onclick="pickTask()">
+        <span>🎯</span>
+        <span class="current-task-text" id="current-task-text">Choisir une tâche pour cette session…</span>
+        <span style="color:var(--text-dim);font-size:11px">▾</span>
+      </div>
+
+      <!-- Ring -->
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 220 220">
+          <circle class="ring-track" cx="110" cy="110" r="100"/>
+          <circle class="ring-fill" id="ring-fill" cx="110" cy="110" r="100"/>
+        </svg>
+        <div class="ring-inner">
+          <div class="ring-time" id="ring-time">25:00</div>
+          <div class="ring-mode-label" id="ring-mode-label">Session de travail</div>
+          <div class="ring-session-count" id="ring-session-count">Session 1 / 4</div>
+        </div>
+      </div>
+
+      <!-- Session dots -->
+      <div class="session-dots" id="session-dots"></div>
+
+      <!-- Controls -->
+      <div class="controls" style="margin-top:20px">
+        <button class="ctrl-btn" onclick="skipSession()" title="Passer">⏭</button>
+        <button class="ctrl-btn main" id="main-btn" onclick="toggleTimer()">▶</button>
+        <button class="ctrl-btn" onclick="resetTimer()" title="Recommencer">↺</button>
+      </div>
+
+      <!-- Motivation -->
+      <div class="motivation-msg" id="motivation-msg">Prêt à te concentrer ?</div>
+
+      <!-- Sound toggle -->
+      <div class="sound-row">
+        <span>🔕 Son</span>
+        <div class="toggle-switch" id="sound-toggle" onclick="toggleSound()"></div>
+        <span id="sound-label">Désactivé</span>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="pomo-sidebar" style="display:flex;flex-direction:column;gap:20px">
+      <!-- Stats today -->
+      <div class="card fade-in">
+        <div class="section-label" style="margin-bottom:14px">Aujourd'hui</div>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-val accent-pink" id="stat-sessions">0</div>
+            <div class="stat-label">sessions</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val accent-cyan" id="stat-focus">0min</div>
+            <div class="stat-label">temps focus</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val accent-green" id="stat-breaks">0</div>
+            <div class="stat-label">pauses</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val accent-yellow" id="stat-streak">0🔥</div>
+            <div class="stat-label">jours actifs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All time -->
+      <div class="card fade-in" style="animation-delay:.1s">
+        <div class="section-label" style="margin-bottom:14px">Total cumulé</div>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-val accent-pink" id="stat-total-sessions">0</div>
+            <div class="stat-label">sessions</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val accent-cyan" id="stat-total-hours">0h</div>
+            <div class="stat-label">focus</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="card fade-in" style="animation-delay:.15s">
+        <div class="section-label" style="margin-bottom:14px">Paramètres</div>
+        <div class="settings-grid">
+          <div class="setting-row">
+            <span class="setting-label">🍅 Travail (min)</span>
+            <input type="number" class="setting-input" id="set-work" value="25" min="1" max="90" onchange="applySettings()">
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">☕ Pause courte</span>
+            <input type="number" class="setting-input" id="set-short" value="5" min="1" max="30" onchange="applySettings()">
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">🛋 Pause longue</span>
+            <input type="number" class="setting-input" id="set-long" value="15" min="5" max="60" onchange="applySettings()">
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Sessions / cycle</span>
+            <input type="number" class="setting-input" id="set-cycle" value="4" min="2" max="8" onchange="applySettings()">
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Auto-start pauses</span>
+            <div class="toggle-switch" id="auto-break-toggle" onclick="toggleAutoBreak()"></div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Auto-start travail</span>
+            <div class="toggle-switch" id="auto-work-toggle" onclick="toggleAutoWork()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session log -->
+      <div class="card fade-in" style="animation-delay:.2s">
+        <div class="section-label" style="margin-bottom:14px">Historique du jour</div>
+        <div class="session-log" id="session-log">
+          <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px 0">Aucune session aujourd'hui</p>
+        </div>
+        <button class="btn btn-danger" style="width:100%;justify-content:center;margin-top:12px;font-size:12px" onclick="clearStats()">Réinitialiser les stats</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Task picker modal -->
+<div class="modal-overlay" id="task-picker-modal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h2 class="modal-title">Choisir une tâche</h2>
+      <button class="modal-close" onclick="closeModal('task-picker-modal')">✕</button>
+    </div>
+    <div id="task-picker-list" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:12px" onclick="clearTaskPick()">✕ Sans tâche spécifique</button>
+  </div>
+</div>
+
+<script>
+const MOTIVATIONS_WORK = [
+  'Tu gères ! Continue. 💪', 'Focus total. Zone activée. 🎯',
+  'Chaque seconde compte. ⚡', 'Deep work en cours…',
+  'Les champions travaillent quand ils ne veulent pas. 🏆',
+  'Un block à la fois. Tu y es. 🔥', 'Cerveau en pleine forme. 🧠',
+];
+const MOTIVATIONS_BREAK = [
+  'Pause bien méritée ! 🎉', 'Recharge les batteries. ⚡',
+  'Lève-toi, étire-toi. 🧘', 'Hydrate-toi ! 💧',
+  'Tu as bien bossé. Profite. ✨',
+];
+
+// State
+let mode = 'work'; // work | short | long
+let running = false;
+let interval = null;
+let secondsLeft = 25 * 60;
+let totalSeconds = 25 * 60;
+let sessionsThisCycle = 0;
+let currentTaskName = null;
+let soundOn = false;
+let autoBreak = false;
+let autoWork = false;
+let todayLog = [];
+const CIRCUMFERENCE = 2 * Math.PI * 100; // r=100
+
+// Settings
+let settings = { work: 25, short: 5, long: 15, cycle: 4 };
+
+function loadSettings() {
+  const s = JSON.parse(localStorage.getItem('sh_pomo_settings') || 'null');
+  if (s) { settings = s; Object.entries(s).forEach(([k,v]) => { const el = document.getElementById('set-'+k); if (el) el.value = v; }); }
+}
+
+function applySettings() {
+  settings.work = parseInt(document.getElementById('set-work').value) || 25;
+  settings.short = parseInt(document.getElementById('set-short').value) || 5;
+  settings.long = parseInt(document.getElementById('set-long').value) || 15;
+  settings.cycle = parseInt(document.getElementById('set-cycle').value) || 4;
+  localStorage.setItem('sh_pomo_settings', JSON.stringify(settings));
+  if (!running) {
+    setMode(mode);
+  }
+}
+
+function getModeDuration() {
+  if (mode === 'work') return settings.work * 60;
+  if (mode === 'short') return settings.short * 60;
+  return settings.long * 60;
+}
+
+function getModeColor() {
+  if (mode === 'work') return 'var(--pink)';
+  if (mode === 'short') return 'var(--green)';
+  return 'var(--cyan)';
+}
+
+function getModeLabel() {
+  if (mode === 'work') return 'Session de travail';
+  if (mode === 'short') return 'Pause courte';
+  return 'Pause longue';
+}
+
+function setMode(m) {
+  if (running) stopTimer();
+  mode = m;
+  secondsLeft = totalSeconds = getModeDuration();
+
+  // Update tabs
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  const tabs = { work: 0, short: 1, long: 2 };
+  document.querySelectorAll('.mode-tab')[tabs[m]].classList.add('active');
+
+  updateDisplay();
+  document.getElementById('ring-fill').style.stroke = getModeColor();
+  document.getElementById('ring-time').style.color = getModeColor();
+  document.getElementById('motivation-msg').textContent = m === 'work' ? 'Prêt à te concentrer ?' : 'Profite de ta pause !';
+  document.getElementById('main-btn').style.background = m === 'work' ? 'var(--pink)' : m === 'short' ? 'var(--green)' : 'var(--cyan)';
+  document.getElementById('main-btn').style.borderColor = getModeColor();
+  document.getElementById('main-btn').style.boxShadow = `0 4px 20px ${getModeColor()}55`;
+}
+
+function updateDisplay() {
+  const m = Math.floor(secondsLeft / 60);
+  const s = secondsLeft % 60;
+  document.getElementById('ring-time').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('ring-mode-label').textContent = getModeLabel();
+  document.getElementById('ring-session-count').textContent = `Session ${sessionsThisCycle+1} / ${settings.cycle}`;
+
+  const pct = secondsLeft / totalSeconds;
+  const offset = CIRCUMFERENCE * (1 - pct);
+  document.getElementById('ring-fill').style.strokeDasharray = CIRCUMFERENCE;
+  document.getElementById('ring-fill').style.strokeDashoffset = offset;
+
+  // Title
+  document.title = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} — StudyHub Focus`;
+
+  // Dots
+  renderDots();
+}
+
+function renderDots() {
+  const container = document.getElementById('session-dots');
+  let html = '';
+  for (let i = 0; i < settings.cycle; i++) {
+    const cls = i < sessionsThisCycle ? 'done' : '';
+    html += `<div class="session-dot-item ${cls}"></div>`;
+  }
+  container.innerHTML = html;
+}
+
+function toggleTimer() {
+  if (running) stopTimer();
+  else startTimer();
+}
+
+function startTimer() {
+  running = true;
+  const btn = document.getElementById('main-btn');
+  btn.innerHTML = '⏸';
+  btn.classList.add('running');
+
+  const msgs = mode === 'work' ? MOTIVATIONS_WORK : MOTIVATIONS_BREAK;
+  document.getElementById('motivation-msg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+
+  interval = setInterval(() => {
+    secondsLeft--;
+    updateDisplay();
+    if (secondsLeft <= 0) {
+      clearInterval(interval);
+      running = false;
+      onTimerEnd();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  running = false;
+  clearInterval(interval);
+  const btn = document.getElementById('main-btn');
+  btn.innerHTML = '▶';
+  btn.classList.remove('running');
+  document.getElementById('motivation-msg').textContent = 'En pause…';
+}
+
+function resetTimer() {
+  stopTimer();
+  secondsLeft = totalSeconds = getModeDuration();
+  updateDisplay();
+  document.getElementById('motivation-msg').textContent = 'Prêt à reprendre ?';
+}
+
+function skipSession() {
+  stopTimer();
+  onTimerEnd(true);
+}
+
+function onTimerEnd(skipped = false) {
+  const btn = document.getElementById('main-btn');
+  btn.innerHTML = '▶';
+  btn.classList.remove('running');
+
+  if (mode === 'work' && !skipped) {
+    // Log session
+    const dur = settings.work;
+    const now = new Date();
+    const entry = {
+      type: 'work',
+      task: currentTaskName,
+      duration: dur,
+      time: now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }),
+      ts: Date.now(),
+    };
+    todayLog.unshift(entry);
+    renderLog();
+
+    // Save stats
+    const stats = JSON.parse(localStorage.getItem('sh_pomo_stats') || '{"sessions":0,"minutes":0}');
+    stats.sessions++;
+    stats.minutes += dur;
+    localStorage.setItem('sh_pomo_stats', JSON.stringify(stats));
+
+    sessionsThisCycle++;
+    if (sessionsThisCycle >= settings.cycle) sessionsThisCycle = 0;
+
+    if (soundOn) playBeep();
+
+    // Notify
+    if (Notification.permission === 'granted') {
+      new Notification('🍅 Session terminée !', { body: 'Bravo ! Prends une pause méritée.', icon: '' });
+    }
+
+    document.getElementById('motivation-msg').textContent = '🎉 Session terminée ! Prends une pause.';
+
+    // Auto next
+    const nextMode = sessionsThisCycle === 0 ? 'long' : 'short';
+    if (autoBreak) { setTimeout(() => setMode(nextMode), 1500); setTimeout(() => startTimer(), 1600); }
+    else setMode(nextMode);
+  } else {
+    if (soundOn) playBeep(true);
+    document.getElementById('motivation-msg').textContent = '⚡ Pause terminée ! Au boulot !';
+    if (autoWork) { setTimeout(() => setMode('work'), 1500); setTimeout(() => startTimer(), 1600); }
+    else setMode('work');
+  }
+
+  updateStats();
+  renderDots();
+}
+
+function updateStats() {
+  const todaySessions = todayLog.filter(e => e.type === 'work');
+  const todayBreaks = todayLog.filter(e => e.type !== 'work');
+  document.getElementById('stat-sessions').textContent = todaySessions.length;
+  const focusMins = todaySessions.reduce((s, e) => s + e.duration, 0);
+  document.getElementById('stat-focus').textContent = focusMins >= 60 ? Math.floor(focusMins/60)+'h'+(focusMins%60?focusMins%60+'m':'') : focusMins+'min';
+  document.getElementById('stat-breaks').textContent = todayBreaks.length;
+  document.getElementById('stat-streak').textContent = (localStorage.getItem('sh_streak')||'0') + '🔥';
+
+  const total = JSON.parse(localStorage.getItem('sh_pomo_stats') || '{"sessions":0,"minutes":0}');
+  document.getElementById('stat-total-sessions').textContent = total.sessions;
+  const h = Math.floor(total.minutes/60);
+  const m = total.minutes % 60;
+  document.getElementById('stat-total-hours').textContent = h ? `${h}h${m?m+'m':''}` : `${m}min`;
+}
+
+function renderLog() {
+  const el = document.getElementById('session-log');
+  if (!todayLog.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px 0">Aucune session aujourd\'hui</p>';
+    return;
+  }
+  const colors = { work: 'var(--pink)', short: 'var(--green)', long: 'var(--cyan)' };
+  const labels = { work: '🍅 Travail', short: '☕ Pause courte', long: '🛋 Pause longue' };
+  el.innerHTML = todayLog.map(e => `
+    <div class="session-entry">
+      <div class="session-dot" style="background:${colors[e.type]||'var(--pink)'}"></div>
+      <div class="session-label">
+        ${labels[e.type]||'Session'}
+        ${e.task ? `<div style="font-size:10px;color:var(--text-dim)">${e.task}</div>` : ''}
+      </div>
+      <span class="session-time">${e.time}</span>
+      <span class="session-dur">${e.duration}min</span>
+    </div>`).join('');
+}
+
+function clearStats() {
+  if (!confirm('Réinitialiser les statistiques totales ?')) return;
+  localStorage.removeItem('sh_pomo_stats');
+  todayLog = [];
+  renderLog();
+  updateStats();
+}
+
+function playBeep(isBreak = false) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = isBreak ? 440 : 660;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    osc.start(); osc.stop(ctx.currentTime + 0.8);
+  } catch(e) {}
+}
+
+function toggleSound() {
+  soundOn = !soundOn;
+  document.getElementById('sound-toggle').classList.toggle('on', soundOn);
+  document.getElementById('sound-label').textContent = soundOn ? 'Activé' : 'Désactivé';
+  if (soundOn) playBeep();
+}
+
+function toggleAutoBreak() {
+  autoBreak = !autoBreak;
+  document.getElementById('auto-break-toggle').classList.toggle('on', autoBreak);
+}
+
+function toggleAutoWork() {
+  autoWork = !autoWork;
+  document.getElementById('auto-work-toggle').classList.toggle('on', autoWork);
+}
+
+function pickTask() {
+  const tasks = JSON.parse(localStorage.getItem('sh_tasks') || '[]').filter(t => !t.done);
+  const el = document.getElementById('task-picker-list');
+  if (!tasks.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0">Aucune tâche en cours.<br><a href="tasks.html" style="color:var(--cyan)">Ajouter des tâches</a></p>';
+  } else {
+    el.innerHTML = tasks.map(t => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--surface2)'" onclick="selectTask('${t.id}','${escAttr(t.title)}')">
+        <span style="font-size:12px;font-weight:700;color:${t.priority==='haute'?'var(--pink)':t.priority==='basse'?'var(--green)':'var(--yellow)'}">
+          ${t.priority==='haute'?'🔴':t.priority==='basse'?'🟢':'🟡'}
+        </span>
+        <div>
+          <div style="font-size:13px;font-weight:500">${escHtml(t.title)}</div>
+          ${t.subject?`<div style="font-size:11px;color:var(--text-muted)">${escHtml(t.subject)}</div>`:''}
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('task-picker-modal').classList.add('open');
+}
+
+function selectTask(id, name) {
+  currentTaskName = name;
+  document.getElementById('current-task-text').textContent = name;
+  closeModal('task-picker-modal');
+}
+
+function clearTaskPick() {
+  currentTaskName = null;
+  document.getElementById('current-task-text').textContent = 'Choisir une tâche pour cette session…';
+  closeModal('task-picker-modal');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.getElementById('task-picker-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal('task-picker-modal'); });
+
+function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+function escAttr(s) { return s ? s.replace(/'/g,"\\'") : ''; }
+
+// Request notification permission
+if (Notification && Notification.permission === 'default') Notification.requestPermission();
+
+// Init
+loadSettings();
+setMode('work');
+updateStats();
+renderLog();
+</script>
+</body>
+</html>

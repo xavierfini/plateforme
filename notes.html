@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyHub — Notes & Matières</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.notes-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+}
+
+/* Subject cards */
+.subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.subject-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.subject-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.subject-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--text-dim); }
+.subject-card.selected { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); }
+
+.subject-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.subject-emoji { font-size: 28px; line-height: 1; }
+.subject-avg {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+.subject-avg-sub { font-size: 12px; color: var(--text-muted); text-align: right; margin-top: 2px; }
+.subject-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.subject-info { font-size: 12px; color: var(--text-muted); }
+.subject-progress {
+  margin-top: 14px;
+}
+.subject-progress-bar {
+  height: 5px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.subject-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+.subject-grades-preview {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.grade-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--surface2);
+  color: var(--text-muted);
+}
+.grade-pill.good { background: rgba(61,255,160,0.12); color: var(--green); }
+.grade-pill.avg { background: rgba(0,229,255,0.12); color: var(--cyan); }
+.grade-pill.bad { background: rgba(255,61,130,0.12); color: var(--pink); }
+
+/* Detail panel */
+.detail-panel {}
+.detail-panel-title {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.grades-table th {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.grades-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.grades-table tr:last-child td { border-bottom: none; }
+.grades-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.grade-value {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+.grade-actions {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.grades-table tr:hover .grade-actions { opacity: 1; }
+
+/* Stats sidebar */
+.stats-side { display: flex; flex-direction: column; gap: 16px; }
+.overall-avg-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.overall-avg-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(0,229,255,0.1), transparent);
+}
+.overall-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.overall-val {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--grad-cyan);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.overall-denom { font-size: 18px; color: var(--text-muted); }
+
+.ranking-list { display: flex; flex-direction: column; gap: 8px; }
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ranking-item:hover { background: var(--border); }
+.ranking-num {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  width: 28px;
+  color: var(--text-dim);
+}
+.ranking-num.top { color: var(--yellow); }
+.ranking-name { flex: 1; font-size: 13px; font-weight: 500; }
+.ranking-avg {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* History chart */
+.chart-container {
+  position: relative;
+  height: 120px;
+}
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 100%;
+  padding-top: 20px;
+}
+.chart-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+.chart-bar {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+}
+.chart-bar-inner {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.5s ease;
+  cursor: pointer;
+}
+.chart-bar-inner:hover { filter: brightness(1.3); }
+.chart-bar-label { font-size: 9px; color: var(--text-dim); }
+
+/* Add subject button */
+.add-subject-card {
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 140px;
+  color: var(--text-dim);
+}
+.add-subject-card:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,0.03); }
+.add-subject-icon { font-size: 28px; }
+.add-subject-text { font-size: 13px; font-weight: 600; }
+
+/* Coeff badge */
+.coeff-badge {
+  font-size: 10px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">S</a>
+  <a class="nav-link" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-label">Board</span>
+  </a>
+  <a class="nav-link" href="agenda.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="nav-label">Agenda</span>
+  </a>
+  <a class="nav-link" href="tasks.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span class="nav-label">Tâches</span>
+  </a>
+  <a class="nav-link active" href="notes.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span class="nav-label">Notes</span>
+  </a>
+  <a class="nav-link" href="pomodoro.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span class="nav-label">Focus</span>
+  </a>
+  <a class="nav-link" href="carnet.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    <span class="nav-label">Carnet</span>
+  </a>
+</nav>
+
+<main class="main">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Notes & Matières</h1>
+      <p class="page-subtitle" id="notes-subtitle">Suivi de tes résultats</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="openAddGrade()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Ajouter une note
+      </button>
+      <button class="btn btn-primary" onclick="openAddSubject()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Nouvelle matière
+      </button>
+    </div>
+  </div>
+
+  <div class="notes-layout">
+    <div>
+      <!-- Subjects grid -->
+      <div class="subjects-grid fade-in" id="subjects-grid">
+        <div class="add-subject-card" onclick="openAddSubject()">
+          <div class="add-subject-icon">➕</div>
+          <div class="add-subject-text">Ajouter une matière</div>
+        </div>
+      </div>
+
+      <!-- Grades detail for selected subject -->
+      <div class="card fade-in" id="grades-detail" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div class="detail-panel-title" id="detail-subject-name">Matière</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="openAddGradeForSubject()" style="font-size:12px;padding:7px 12px">+ Note</button>
+            <button class="btn btn-ghost btn-sm" onclick="openEditSubject()" style="font-size:12px;padding:7px 12px">✏️ Modifier</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSubject()" style="font-size:12px;padding:7px 12px">🗑</button>
+          </div>
+        </div>
+
+        <!-- Mini chart -->
+        <div style="margin-bottom:20px">
+          <div class="section-label" style="margin-bottom:12px">Évolution</div>
+          <div class="chart-container" id="grade-chart"></div>
+        </div>
+
+        <!-- Grades table -->
+        <table class="grades-table" id="grades-table">
+          <thead><tr>
+            <th>Évaluation</th>
+            <th>Note</th>
+            <th>Coeff.</th>
+            <th>Date</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="grades-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right sidebar stats -->
+    <div class="stats-side">
+      <div class="overall-avg-card fade-in">
+        <div class="overall-label">Moyenne générale</div>
+        <div class="overall-val" id="overall-avg">–<span class="overall-denom">/20</span></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:8px" id="overall-info">Aucune note enregistrée</div>
+      </div>
+
+      <div class="card fade-in" style="animation-delay:.1s">
+        <div class="section-label" style="margin-bottom:14px">Classement matières</div>
+        <div class="ranking-list" id="ranking-list">
+          <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px 0">Aucune matière</p>
+        </div>
+      </div>
+
+      <div class="card fade-in" style="animation-delay:.2s">
+        <div class="section-label" style="margin-bottom:14px">Statistiques</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;text-align:center">
+            <div style="font-family:'Clash Display',sans-serif;font-size:24px;font-weight:700;color:var(--green)" id="stat-best">–</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Meilleure</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;text-align:center">
+            <div style="font-family:'Clash Display',sans-serif;font-size:24px;font-weight:700;color:var(--pink)" id="stat-worst">–</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Plus basse</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;text-align:center">
+            <div style="font-family:'Clash Display',sans-serif;font-size:24px;font-weight:700;color:var(--cyan)" id="stat-count">0</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Notes totales</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;text-align:center">
+            <div style="font-family:'Clash Display',sans-serif;font-size:24px;font-weight:700;color:var(--violet)" id="stat-subjects">0</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Matières</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add Subject Modal -->
+<div class="modal-overlay" id="subject-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-subject-title">Nouvelle matière</h2>
+      <button class="modal-close" onclick="closeModal('subject-modal')">✕</button>
+    </div>
+    <input type="hidden" id="subj-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nom de la matière *</label>
+        <input type="text" id="subj-name" placeholder="ex: Mathématiques" />
+      </div>
+      <div class="form-group">
+        <label>Emoji</label>
+        <input type="text" id="subj-emoji" placeholder="📚" maxlength="2" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Coefficient (optionnel)</label>
+        <input type="number" id="subj-coeff" placeholder="1" min="0.5" max="10" step="0.5" />
+      </div>
+      <div class="form-group">
+        <label>Professeur (optionnel)</label>
+        <input type="text" id="subj-prof" placeholder="M. Dupont" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Couleur</label>
+      <select id="subj-color">
+        <option value="cyan">🩵 Cyan</option>
+        <option value="pink">🩷 Rose</option>
+        <option value="yellow">💛 Jaune</option>
+        <option value="green">💚 Vert</option>
+        <option value="violet">💜 Violet</option>
+        <option value="orange">🧡 Orange</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-ghost" style="margin-left:auto" onclick="closeModal('subject-modal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveSubject()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Grade Modal -->
+<div class="modal-overlay" id="grade-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-grade-title">Ajouter une note</h2>
+      <button class="modal-close" onclick="closeModal('grade-modal')">✕</button>
+    </div>
+    <input type="hidden" id="grade-id">
+    <input type="hidden" id="grade-subject-id">
+    <div class="form-group">
+      <label>Matière *</label>
+      <select id="grade-subj-select"></select>
+    </div>
+    <div class="form-group">
+      <label>Intitulé de l'évaluation</label>
+      <input type="text" id="grade-name" placeholder="ex: Contrôle chapitre 3, DS n°2…" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Note * (sur 20)</label>
+        <input type="number" id="grade-value" placeholder="14.5" min="0" max="20" step="0.5" />
+      </div>
+      <div class="form-group">
+        <label>Coefficient</label>
+        <input type="number" id="grade-coeff" placeholder="1" min="0.5" max="5" step="0.5" value="1" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="grade-date" />
+    </div>
+    <div class="form-group">
+      <label>Commentaire</label>
+      <input type="text" id="grade-comment" placeholder="Optionnel…" />
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button id="grade-delete-btn" class="btn btn-danger" style="display:none" onclick="deleteGrade()">🗑 Supprimer</button>
+      <button class="btn btn-ghost" style="margin-left:auto" onclick="closeModal('grade-modal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveGrade()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+let selectedSubjectId = null;
+
+function getMatieres() { return JSON.parse(localStorage.getItem('sh_matieres') || '[]'); }
+function saveMatieres(m) {
+  localStorage.setItem('sh_matieres', JSON.stringify(m));
+  // Also update note count for dashboard
+  const count = m.reduce((sum, mat) => sum + (mat.grades||[]).length, 0);
+  localStorage.setItem('sh_notes_count', count);
+}
+function getGrades() { return JSON.parse(localStorage.getItem('sh_grades') || '[]'); }
+function saveGrades(g) { localStorage.setItem('sh_grades', JSON.stringify(g)); }
+
+function calcAvg(grades) {
+  if (!grades || !grades.length) return null;
+  const total = grades.reduce((s, g) => s + g.value * (g.coeff || 1), 0);
+  const coeffSum = grades.reduce((s, g) => s + (g.coeff || 1), 0);
+  return coeffSum ? total / coeffSum : null;
+}
+
+function gradeClass(v) {
+  if (v === null || v === undefined) return '';
+  if (v >= 14) return 'good';
+  if (v >= 10) return 'avg';
+  return 'bad';
+}
+
+function gradeColor(v) {
+  if (v === null || v === undefined) return 'var(--text-muted)';
+  if (v >= 14) return 'var(--green)';
+  if (v >= 10) return 'var(--cyan)';
+  return 'var(--pink)';
+}
+
+function renderPage() {
+  const matieres = getMatieres();
+  const grades = getGrades();
+
+  // Enrich matieres with grades
+  matieres.forEach(m => {
+    m.grades = grades.filter(g => g.subjectId === m.id);
+    m.avg = calcAvg(m.grades);
+  });
+
+  // Save avg back for dashboard
+  const toSave = matieres.map(m => ({ ...m, grades: undefined }));
+  localStorage.setItem('sh_matieres', JSON.stringify(matieres));
+
+  // Stats
+  const allGrades = grades;
+  const allVals = allGrades.map(g => g.value);
+  document.getElementById('stat-count').textContent = allVals.length;
+  document.getElementById('stat-subjects').textContent = matieres.length;
+  if (allVals.length) {
+    document.getElementById('stat-best').textContent = Math.max(...allVals).toFixed(1);
+    document.getElementById('stat-worst').textContent = Math.min(...allVals).toFixed(1);
+  }
+
+  // Overall average (weighted by subject coeff)
+  const validMatieres = matieres.filter(m => m.avg !== null);
+  if (validMatieres.length) {
+    const total = validMatieres.reduce((s, m) => s + m.avg * (m.coeff||1), 0);
+    const coeffSum = validMatieres.reduce((s, m) => s + (m.coeff||1), 0);
+    const overallAvg = total / coeffSum;
+    document.getElementById('overall-avg').innerHTML = `${overallAvg.toFixed(2)}<span class="overall-denom">/20</span>`;
+    document.getElementById('overall-avg').style.background = `linear-gradient(135deg, ${gradeColor(overallAvg)}, ${gradeColor(overallAvg)}aa)`;
+    document.getElementById('overall-avg').style.webkitBackgroundClip = 'text';
+    document.getElementById('overall-avg').style.webkitTextFillColor = 'transparent';
+    document.getElementById('overall-info').textContent = `Basée sur ${validMatieres.length} matière${validMatieres.length!==1?'s':''}`;
+  } else {
+    document.getElementById('overall-avg').innerHTML = '–<span class="overall-denom">/20</span>';
+    document.getElementById('overall-info').textContent = 'Aucune note enregistrée';
+  }
+
+  // Subjects grid
+  const grid = document.getElementById('subjects-grid');
+  grid.innerHTML = matieres.map(m => {
+    const avg = m.avg;
+    const col = m.color || 'cyan';
+    const pct = avg !== null ? (avg / 20) * 100 : 0;
+    const latestGrades = (m.grades || []).slice(-4).reverse();
+    return `<div class="subject-card ${selectedSubjectId===m.id?'selected':''}" onclick="selectSubject('${m.id}')" style="border-top-color:var(--${col})">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--${col});border-radius:var(--radius) var(--radius) 0 0"></div>
+      <div class="subject-card-header">
+        <div>
+          <div class="subject-emoji">${m.emoji || '📚'}</div>
+          <div class="subject-name" style="margin-top:8px">${escHtml(m.name)}</div>
+          <div class="subject-info">${m.grades.length} note${m.grades.length!==1?'s':''} · coeff ${m.coeff||1}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="subject-avg" style="color:${gradeColor(avg)}">${avg !== null ? avg.toFixed(1) : '–'}</div>
+          <div class="subject-avg-sub">/20</div>
+        </div>
+      </div>
+      <div class="subject-progress">
+        <div class="subject-progress-bar">
+          <div class="subject-progress-fill" style="width:${pct}%;background:var(--${col})"></div>
+        </div>
+      </div>
+      <div class="subject-grades-preview">
+        ${latestGrades.map(g => `<span class="grade-pill ${gradeClass(g.value)}">${g.value}</span>`).join('')}
+        ${m.grades.length > 4 ? `<span class="grade-pill">+${m.grades.length-4}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('') + `<div class="add-subject-card" onclick="openAddSubject()">
+    <div class="add-subject-icon">➕</div>
+    <div class="add-subject-text">Nouvelle matière</div>
+  </div>`;
+
+  // Ranking
+  const sorted = [...matieres].filter(m => m.avg !== null).sort((a,b) => b.avg - a.avg);
+  const rankEl = document.getElementById('ranking-list');
+  if (!sorted.length) {
+    rankEl.innerHTML = '<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px 0">Aucune note</p>';
+  } else {
+    rankEl.innerHTML = sorted.map((m, i) => `
+      <div class="ranking-item" onclick="selectSubject('${m.id}')">
+        <div class="ranking-num ${i===0?'top':(i<3?'accent-cyan':'')}">${i+1}</div>
+        <div style="font-size:18px">${m.emoji||'📚'}</div>
+        <div class="ranking-name">${escHtml(m.name)}</div>
+        <div class="ranking-avg" style="color:${gradeColor(m.avg)}">${m.avg.toFixed(1)}</div>
+      </div>`).join('');
+  }
+
+  // Update grade detail if subject is selected
+  if (selectedSubjectId) {
+    const m = matieres.find(m => m.id === selectedSubjectId);
+    if (m) renderGradesDetail(m);
+    else { selectedSubjectId = null; document.getElementById('grades-detail').style.display = 'none'; }
+  }
+
+  // Update subtitle
+  document.getElementById('notes-subtitle').textContent = `${matieres.length} matière${matieres.length!==1?'s':''} · ${allGrades.length} note${allGrades.length!==1?'s':''}`;
+}
+
+function selectSubject(id) {
+  selectedSubjectId = id;
+  document.getElementById('grades-detail').style.display = '';
+  document.getElementById('grades-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  renderPage();
+}
+
+function renderGradesDetail(m) {
+  document.getElementById('detail-subject-name').textContent = `${m.emoji||'📚'} ${m.name}`;
+
+  // Chart
+  const sorted = [...(m.grades||[])].sort((a,b) => new Date(a.date) - new Date(b.date));
+  const chartEl = document.getElementById('grade-chart');
+  if (!sorted.length) {
+    chartEl.innerHTML = '<div style="text-align:center;color:var(--text-dim);font-size:13px;padding:40px 0">Aucune note pour cette matière</div>';
+  } else {
+    const col = m.color || 'cyan';
+    chartEl.innerHTML = `<div class="chart-bars">${sorted.map(g => {
+      const pct = (g.value / 20) * 100;
+      const d = g.date ? new Date(g.date) : null;
+      const label = d ? `${d.getDate()}/${d.getMonth()+1}` : '–';
+      const barColor = gradeColor(g.value);
+      return `<div class="chart-bar-wrap">
+        <div class="chart-bar">
+          <div class="chart-bar-inner" title="${g.name||'Note'}: ${g.value}/20" style="height:${pct}%;background:${barColor};opacity:0.85"></div>
+        </div>
+        <div class="chart-bar-label">${g.value}</div>
+        <div class="chart-bar-label" style="font-size:8px">${label}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  // Table
+  const tbody = document.getElementById('grades-tbody');
+  if (!m.grades || !m.grades.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">Aucune note</td></tr>';
+    return;
+  }
+  const sortedGrades = [...m.grades].sort((a,b) => new Date(b.date) - new Date(a.date));
+  tbody.innerHTML = sortedGrades.map(g => {
+    const d = g.date ? new Date(g.date) : null;
+    return `<tr>
+      <td>
+        <div style="font-weight:500">${escHtml(g.name||'Note')}</div>
+        ${g.comment ? `<div style="font-size:11px;color:var(--text-muted)">${escHtml(g.comment)}</div>` : ''}
+      </td>
+      <td><span class="grade-value" style="color:${gradeColor(g.value)}">${g.value}</span><span style="font-size:11px;color:var(--text-dim)">/20</span></td>
+      <td><span class="coeff-badge">×${g.coeff||1}</span></td>
+      <td style="color:var(--text-muted);font-size:12px">${d ? `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}` : '–'}</td>
+      <td>
+        <div class="grade-actions">
+          <button class="task-action-btn" onclick="editGrade('${g.id}')" title="Modifier">✏️</button>
+          <button class="task-action-btn del" onclick="deleteGradeById('${g.id}')" title="Supprimer" style="width:28px;height:28px;border-radius:7px;border:none;background:var(--surface2);color:var(--text-muted);cursor:pointer;font-size:13px;transition:all 0.15s">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openAddSubject() {
+  document.getElementById('subj-id').value = '';
+  document.getElementById('subj-name').value = '';
+  document.getElementById('subj-emoji').value = '';
+  document.getElementById('subj-coeff').value = '1';
+  document.getElementById('subj-prof').value = '';
+  document.getElementById('subj-color').value = 'cyan';
+  document.getElementById('modal-subject-title').textContent = 'Nouvelle matière';
+  document.getElementById('subject-modal').classList.add('open');
+}
+
+function openEditSubject() {
+  const m = getMatieres().find(m => m.id === selectedSubjectId);
+  if (!m) return;
+  document.getElementById('subj-id').value = m.id;
+  document.getElementById('subj-name').value = m.name;
+  document.getElementById('subj-emoji').value = m.emoji || '';
+  document.getElementById('subj-coeff').value = m.coeff || 1;
+  document.getElementById('subj-prof').value = m.prof || '';
+  document.getElementById('subj-color').value = m.color || 'cyan';
+  document.getElementById('modal-subject-title').textContent = 'Modifier la matière';
+  document.getElementById('subject-modal').classList.add('open');
+}
+
+function saveSubject() {
+  const name = document.getElementById('subj-name').value.trim();
+  if (!name) { alert('Nom requis'); return; }
+  const matieres = getMatieres();
+  const id = document.getElementById('subj-id').value;
+  const subj = {
+    id: id || Date.now().toString(),
+    name,
+    emoji: document.getElementById('subj-emoji').value || '📚',
+    coeff: parseFloat(document.getElementById('subj-coeff').value) || 1,
+    prof: document.getElementById('subj-prof').value.trim(),
+    color: document.getElementById('subj-color').value,
+    avg: null,
+  };
+  if (id) { const idx = matieres.findIndex(m => m.id === id); matieres[idx] = { ...matieres[idx], ...subj }; }
+  else matieres.push(subj);
+  saveMatieres(matieres);
+  closeModal('subject-modal');
+  renderPage();
+}
+
+function deleteSubject() {
+  if (!selectedSubjectId) return;
+  if (!confirm('Supprimer cette matière et toutes ses notes ?')) return;
+  const matieres = getMatieres().filter(m => m.id !== selectedSubjectId);
+  const grades = getGrades().filter(g => g.subjectId !== selectedSubjectId);
+  saveMatieres(matieres);
+  saveGrades(grades);
+  selectedSubjectId = null;
+  document.getElementById('grades-detail').style.display = 'none';
+  renderPage();
+}
+
+function openAddGrade() {
+  const matieres = getMatieres();
+  populateSubjectSelect(matieres, selectedSubjectId);
+  document.getElementById('grade-id').value = '';
+  document.getElementById('grade-name').value = '';
+  document.getElementById('grade-value').value = '';
+  document.getElementById('grade-coeff').value = '1';
+  document.getElementById('grade-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('grade-comment').value = '';
+  document.getElementById('grade-delete-btn').style.display = 'none';
+  document.getElementById('modal-grade-title').textContent = 'Ajouter une note';
+  document.getElementById('grade-modal').classList.add('open');
+}
+
+function openAddGradeForSubject() {
+  openAddGrade();
+  if (selectedSubjectId) document.getElementById('grade-subj-select').value = selectedSubjectId;
+}
+
+function editGrade(id) {
+  const g = getGrades().find(g => g.id === id);
+  if (!g) return;
+  const matieres = getMatieres();
+  populateSubjectSelect(matieres, g.subjectId);
+  document.getElementById('grade-id').value = g.id;
+  document.getElementById('grade-name').value = g.name || '';
+  document.getElementById('grade-value').value = g.value;
+  document.getElementById('grade-coeff').value = g.coeff || 1;
+  document.getElementById('grade-date').value = g.date || '';
+  document.getElementById('grade-comment').value = g.comment || '';
+  document.getElementById('grade-delete-btn').style.display = '';
+  document.getElementById('modal-grade-title').textContent = 'Modifier la note';
+  document.getElementById('grade-modal').classList.add('open');
+}
+
+function populateSubjectSelect(matieres, selectedId) {
+  const sel = document.getElementById('grade-subj-select');
+  sel.innerHTML = matieres.map(m => `<option value="${m.id}" ${m.id===selectedId?'selected':''}>${m.emoji||'📚'} ${m.name}</option>`).join('');
+}
+
+function saveGrade() {
+  const val = parseFloat(document.getElementById('grade-value').value);
+  if (isNaN(val) || val < 0 || val > 20) { alert('Note entre 0 et 20'); return; }
+  const subjectId = document.getElementById('grade-subj-select').value;
+  if (!subjectId) { alert('Sélectionne une matière'); return; }
+  const grades = getGrades();
+  const id = document.getElementById('grade-id').value;
+  const grade = {
+    id: id || Date.now().toString(),
+    subjectId,
+    name: document.getElementById('grade-name').value.trim() || 'Note',
+    value: val,
+    coeff: parseFloat(document.getElementById('grade-coeff').value) || 1,
+    date: document.getElementById('grade-date').value,
+    comment: document.getElementById('grade-comment').value.trim(),
+  };
+  if (id) { const idx = grades.findIndex(g => g.id === id); grades[idx] = grade; }
+  else grades.push(grade);
+  saveGrades(grades);
+  closeModal('grade-modal');
+  renderPage();
+}
+
+function deleteGrade() {
+  const id = document.getElementById('grade-id').value;
+  if (!confirm('Supprimer cette note ?')) return;
+  saveGrades(getGrades().filter(g => g.id !== id));
+  closeModal('grade-modal');
+  renderPage();
+}
+
+function deleteGradeById(id) {
+  if (!confirm('Supprimer cette note ?')) return;
+  saveGrades(getGrades().filter(g => g.id !== id));
+  renderPage();
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+['subject-modal','grade-modal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(id); });
+});
+
+function escHtml(str) { if (!str) return ''; return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Add style for task-action-btn del hover
+const style = document.createElement('style');
+style.textContent = `.task-action-btn.del:hover{background:rgba(255,61,130,0.15)!important;color:var(--pink)!important}`;
+document.head.appendChild(style);
+
+renderPage();
+</script>
+</body>
+</html>
