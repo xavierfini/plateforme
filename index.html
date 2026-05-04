@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyHub — Tableau de bord</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  gap: 20px;
+}
+
+/* Hero banner */
+.hero-card {
+  grid-column: 1 / 3;
+  background: linear-gradient(135deg, #0d2d3d 0%, #0d0d14 60%);
+  border: 1px solid rgba(0,229,255,0.2);
+  position: relative;
+  overflow: hidden;
+  padding: 32px;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(0,229,255,0.15) 0%, transparent 70%);
+}
+.hero-card::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 100px;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(255,61,130,0.1) 0%, transparent 70%);
+}
+.hero-greeting {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  color: var(--cyan);
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.hero-name {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.hero-name span { color: var(--cyan); }
+.hero-subtitle { color: var(--text-muted); font-size: 15px; margin-top: 10px; }
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  margin-top: 28px;
+}
+.hero-stat-val {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+.hero-stat-lbl {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Date / time card */
+.time-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.time-clock {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -2px;
+  background: var(--grad-cyan);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.time-date {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 500;
+}
+.time-day {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  color: var(--yellow);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+/* Quick todo */
+.quick-todo { grid-column: 1 / 2; }
+.section-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.todo-item:last-child { border-bottom: none; }
+.todo-item.done { opacity: 0.4; }
+.todo-check {
+  width: 20px; height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.todo-item.done .todo-check {
+  background: var(--green);
+  border-color: var(--green);
+}
+.todo-item.done .todo-check::after { content: '✓'; font-size: 12px; color: #000; font-weight: 700; }
+.todo-text { font-size: 14px; flex: 1; }
+.todo-item.done .todo-text { text-decoration: line-through; color: var(--text-muted); }
+.todo-subject {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Upcoming events */
+.upcoming-card { grid-column: 2 / 4; }
+.event-list { display: flex; flex-direction: column; gap: 10px; }
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--cyan);
+  transition: transform 0.15s;
+}
+.event-item:hover { transform: translateX(4px); }
+.event-item.pink { border-left-color: var(--pink); }
+.event-item.yellow { border-left-color: var(--yellow); }
+.event-item.violet { border-left-color: var(--violet); }
+.event-item.green { border-left-color: var(--green); }
+.event-time {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  min-width: 50px;
+  color: var(--cyan);
+}
+.event-item.pink .event-time { color: var(--pink); }
+.event-item.yellow .event-time { color: var(--yellow); }
+.event-item.violet .event-time { color: var(--violet); }
+.event-item.green .event-time { color: var(--green); }
+.event-day { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.event-info { flex: 1; }
+.event-title { font-weight: 600; font-size: 14px; }
+.event-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.event-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(0,229,255,0.1);
+  color: var(--cyan);
+}
+.event-item.pink .event-badge { background: rgba(255,61,130,0.1); color: var(--pink); }
+.event-item.yellow .event-badge { background: rgba(255,224,51,0.1); color: var(--yellow); }
+.event-item.violet .event-badge { background: rgba(181,110,255,0.1); color: var(--violet); }
+.event-item.green .event-badge { background: rgba(61,255,160,0.1); color: var(--green); }
+
+/* Matières progress */
+.matieres-card { grid-column: 1 / 2; }
+.matiere-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.matiere-row:last-child { margin-bottom: 0; }
+.matiere-header { display: flex; justify-content: space-between; align-items: center; }
+.matiere-name { font-size: 13px; font-weight: 500; }
+.matiere-grade {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+.progress-bar {
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease;
+}
+
+/* Pomodoro mini widget */
+.pomo-card { grid-column: 2 / 3; }
+.pomo-ring-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 10px 0;
+}
+.pomo-ring {
+  position: relative;
+  width: 100px; height: 100px;
+}
+.pomo-svg { transform: rotate(-90deg); }
+.pomo-track { fill: none; stroke: var(--surface2); stroke-width: 8; }
+.pomo-fill  { fill: none; stroke: var(--pink); stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear; }
+.pomo-time {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Clash Display', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--pink);
+}
+.pomo-label { font-size: 12px; color: var(--text-muted); margin-top: 8px; text-align: center; }
+.pomo-btns { display: flex; gap: 8px; margin-top: 14px; }
+
+/* Stats row */
+.stats-card { grid-column: 3 / 4; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat-box {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+}
+.stat-box-val {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+.stat-box-lbl { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* Shortcuts */
+.shortcuts { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+.shortcut-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+.shortcut-btn:hover { transform: translateY(-2px); }
+.sc-cyan   { background: rgba(0,229,255,0.1);   color: var(--cyan);   border-color: rgba(0,229,255,0.2); }
+.sc-pink   { background: rgba(255,61,130,0.1);  color: var(--pink);   border-color: rgba(255,61,130,0.2); }
+.sc-yellow { background: rgba(255,224,51,0.1);  color: var(--yellow); border-color: rgba(255,224,51,0.2); }
+.sc-green  { background: rgba(61,255,160,0.1);  color: var(--green);  border-color: rgba(61,255,160,0.2); }
+.sc-violet { background: rgba(181,110,255,0.1); color: var(--violet); border-color: rgba(181,110,255,0.2); }
+.sc-orange { background: rgba(255,122,61,0.1);  color: var(--orange); border-color: rgba(255,122,61,0.2); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="nav">
+  <a class="nav-logo" href="index.html">S</a>
+  <a class="nav-link active" href="index.html" title="Tableau de bord">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-label">Board</span>
+  </a>
+  <a class="nav-link" href="agenda.html" title="Agenda">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="nav-label">Agenda</span>
+  </a>
+  <a class="nav-link" href="tasks.html" title="Tâches">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span class="nav-label">Tâches</span>
+  </a>
+  <a class="nav-link" href="notes.html" title="Notes & Matières">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <span class="nav-label">Notes</span>
+  </a>
+  <a class="nav-link" href="pomodoro.html" title="Pomodoro">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span class="nav-label">Focus</span>
+  </a>
+  <a class="nav-link" href="carnet.html" title="Carnet de notes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    <span class="nav-label">Carnet</span>
+  </a>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Tableau de bord</h1>
+      <p class="page-subtitle" id="dash-date">Chargement…</p>
+    </div>
+    <div class="shortcuts">
+      <a class="shortcut-btn sc-cyan"   href="agenda.html">📅 Agenda</a>
+      <a class="shortcut-btn sc-pink"   href="tasks.html">✅ Tâches</a>
+      <a class="shortcut-btn sc-yellow" href="notes.html">📊 Notes</a>
+      <a class="shortcut-btn sc-green"  href="pomodoro.html">⏱ Focus</a>
+      <a class="shortcut-btn sc-violet" href="carnet.html">✏️ Carnet</a>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <!-- Hero -->
+    <div class="card hero-card fade-in">
+      <div class="hero-greeting">✦ Bienvenue</div>
+      <div class="hero-name">Prêt à <span>étudier</span> ?</div>
+      <div class="hero-subtitle">Tu as du contenu à gérer aujourd'hui. Let's go 🚀</div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-val accent-cyan" id="stat-tasks">—</div>
+          <div class="hero-stat-lbl">tâches restantes</div>
+        </div>
+        <div>
+          <div class="hero-stat-val accent-pink" id="stat-events">—</div>
+          <div class="hero-stat-lbl">événements ce mois</div>
+        </div>
+        <div>
+          <div class="hero-stat-val accent-yellow" id="stat-pomo">—</div>
+          <div class="hero-stat-lbl">sessions focus</div>
+        </div>
+        <div>
+          <div class="hero-stat-val accent-green" id="stat-notes">—</div>
+          <div class="hero-stat-lbl">notes enregistrées</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clock -->
+    <div class="time-card fade-in" style="animation-delay:.1s">
+      <div class="time-clock" id="clock">00:00:00</div>
+      <div class="time-date" id="date-full"></div>
+      <div class="time-day" id="weekday"></div>
+    </div>
+
+    <!-- Quick Tasks -->
+    <div class="card quick-todo fade-in" style="animation-delay:.15s">
+      <div class="section-label">Tâches urgentes</div>
+      <div id="dash-tasks">
+        <p style="color:var(--text-muted);font-size:13px;">Aucune tâche — <a href="tasks.html" style="color:var(--cyan)">ajouter</a></p>
+      </div>
+      <a href="tasks.html" class="btn btn-ghost" style="margin-top:14px;width:100%;justify-content:center">Voir toutes les tâches →</a>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="card upcoming-card fade-in" style="animation-delay:.2s">
+      <div class="section-label">Prochains événements</div>
+      <div class="event-list" id="dash-events">
+        <p style="color:var(--text-muted);font-size:13px;">Aucun événement — <a href="agenda.html" style="color:var(--cyan)">ajouter</a></p>
+      </div>
+    </div>
+
+    <!-- Matières -->
+    <div class="card matieres-card fade-in" style="animation-delay:.25s">
+      <div class="section-label">Moyenne par matière</div>
+      <div id="dash-matieres">
+        <p style="color:var(--text-muted);font-size:13px;">Aucune donnée — <a href="notes.html" style="color:var(--cyan)">saisir</a></p>
+      </div>
+    </div>
+
+    <!-- Mini Pomodoro -->
+    <div class="card pomo-card fade-in" style="animation-delay:.3s">
+      <div class="section-label">Focus rapide</div>
+      <div class="pomo-ring-container">
+        <div class="pomo-ring">
+          <svg class="pomo-svg" viewBox="0 0 100 100" width="100" height="100">
+            <circle class="pomo-track" cx="50" cy="50" r="45"/>
+            <circle class="pomo-fill" id="mini-ring" cx="50" cy="50" r="45"/>
+          </svg>
+          <div class="pomo-time" id="mini-time">25:00</div>
+        </div>
+        <div class="pomo-label" id="mini-label">Session de travail</div>
+      </div>
+      <div class="pomo-btns">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" id="mini-btn" onclick="toggleMiniPomo()">▶ Démarrer</button>
+        <a href="pomodoro.html" class="btn btn-ghost" style="flex:1;justify-content:center">Ouvrir →</a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card stats-card fade-in" style="animation-delay:.35s">
+      <div class="section-label">Cette semaine</div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-box-val accent-cyan" id="week-focus">0h</div>
+          <div class="stat-box-lbl">heures focus</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val accent-pink" id="week-tasks">0</div>
+          <div class="stat-box-lbl">tâches faites</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val accent-yellow" id="week-notes-count">0</div>
+          <div class="stat-box-lbl">notes créées</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val accent-green" id="week-streak">0🔥</div>
+          <div class="stat-box-lbl">jours actifs</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const COLORS = ['cyan','pink','yellow','green','violet','orange'];
+
+// Clock
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+  document.getElementById('date-full').textContent = `${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('weekday').textContent = DAYS[now.getDay()];
+  document.getElementById('dash-date').textContent = `${DAYS[now.getDay()]} ${now.getDate()} ${MONTHS[now.getMonth()]}`;
+}
+updateClock(); setInterval(updateClock, 1000);
+
+// Load data from localStorage
+function loadDashboard() {
+  // Tasks
+  const tasks = JSON.parse(localStorage.getItem('sh_tasks') || '[]');
+  const remaining = tasks.filter(t => !t.done);
+  document.getElementById('stat-tasks').textContent = remaining.length;
+  const urgent = remaining.filter(t => t.priority === 'haute').slice(0, 4);
+  const tasksEl = document.getElementById('dash-tasks');
+  if (urgent.length) {
+    tasksEl.innerHTML = urgent.map(t => `
+      <div class="todo-item ${t.done?'done':''}" onclick="toggleTask('${t.id}')">
+        <div class="todo-check"></div>
+        <div class="todo-text">${t.title}</div>
+        <span class="todo-subject tag" style="background:rgba(255,61,130,0.1);color:var(--pink)">${t.subject||'–'}</span>
+      </div>`).join('');
+  } else if (remaining.length) {
+    tasksEl.innerHTML = remaining.slice(0,4).map(t => `
+      <div class="todo-item" onclick="toggleTaskDash('${t.id}')">
+        <div class="todo-check"></div>
+        <div class="todo-text">${t.title}</div>
+      </div>`).join('');
+  }
+
+  // Events
+  const events = JSON.parse(localStorage.getItem('sh_events') || '[]');
+  document.getElementById('stat-events').textContent = events.length;
+  const now = new Date();
+  const upcoming = events
+    .filter(e => new Date(e.date) >= now)
+    .sort((a,b) => new Date(a.date)-new Date(b.date))
+    .slice(0,4);
+  const evEl = document.getElementById('dash-events');
+  if (upcoming.length) {
+    evEl.innerHTML = '<div class="event-list">' + upcoming.map((e,i) => {
+      const d = new Date(e.date);
+      const col = COLORS[i % COLORS.length];
+      return `<div class="event-item ${col}">
+        <div><div class="event-time">${String(d.getHours()).padStart(2,'0')}h${String(d.getMinutes()).padStart(2,'0')}</div>
+        <div class="event-day">${DAYS[d.getDay()]} ${d.getDate()}</div></div>
+        <div class="event-info"><div class="event-title">${e.title}</div><div class="event-meta">${e.location||''}</div></div>
+        <span class="event-badge">${e.type||'Cours'}</span>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  // Matières
+  const matieres = JSON.parse(localStorage.getItem('sh_matieres') || '[]');
+  const matEl = document.getElementById('dash-matieres');
+  const noteCount = JSON.parse(localStorage.getItem('sh_notes_count') || '0');
+  document.getElementById('stat-notes').textContent = noteCount;
+  document.getElementById('week-notes-count').textContent = noteCount;
+  if (matieres.length) {
+    matEl.innerHTML = matieres.slice(0,5).map(m => {
+      const avg = m.avg || 0;
+      const pct = (avg / 20) * 100;
+      const col = avg >= 14 ? 'var(--green)' : avg >= 10 ? 'var(--cyan)' : 'var(--pink)';
+      return `<div class="matiere-row">
+        <div class="matiere-header">
+          <span class="matiere-name">${m.name}</span>
+          <span class="matiere-grade" style="color:${col}">${avg.toFixed(1)}/20</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Pomodoro stats
+  const pomoStats = JSON.parse(localStorage.getItem('sh_pomo_stats') || '{"sessions":0,"minutes":0}');
+  document.getElementById('stat-pomo').textContent = pomoStats.sessions;
+  document.getElementById('week-focus').textContent = Math.floor(pomoStats.minutes/60) + 'h' + (pomoStats.minutes%60 ? pomoStats.minutes%60 + 'm' : '');
+
+  // Week tasks done
+  const doneTasks = tasks.filter(t => t.done).length;
+  document.getElementById('week-tasks').textContent = doneTasks;
+  document.getElementById('week-streak').textContent = (localStorage.getItem('sh_streak') || '0') + '🔥';
+}
+
+function toggleTaskDash(id) {
+  const tasks = JSON.parse(localStorage.getItem('sh_tasks') || '[]');
+  const t = tasks.find(t => t.id === id);
+  if (t) { t.done = !t.done; localStorage.setItem('sh_tasks', JSON.stringify(tasks)); loadDashboard(); }
+}
+
+// Mini Pomodoro
+let miniInterval = null;
+let miniRunning = false;
+let miniSeconds = 25 * 60;
+const circumference = 2 * Math.PI * 45;
+
+function updateMiniRing() {
+  const pct = miniSeconds / (25 * 60);
+  const offset = circumference * (1 - pct);
+  document.getElementById('mini-ring').style.strokeDashoffset = offset;
+  const m = Math.floor(miniSeconds / 60);
+  const s = miniSeconds % 60;
+  document.getElementById('mini-time').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function toggleMiniPomo() {
+  miniRunning = !miniRunning;
+  const btn = document.getElementById('mini-btn');
+  if (miniRunning) {
+    btn.textContent = '⏸ Pause';
+    miniInterval = setInterval(() => {
+      if (miniSeconds > 0) { miniSeconds--; updateMiniRing(); }
+      else {
+        clearInterval(miniInterval);
+        miniRunning = false;
+        btn.textContent = '▶ Démarrer';
+        miniSeconds = 25 * 60;
+        updateMiniRing();
+        const stats = JSON.parse(localStorage.getItem('sh_pomo_stats') || '{"sessions":0,"minutes":0}');
+        stats.sessions++;
+        stats.minutes += 25;
+        localStorage.setItem('sh_pomo_stats', JSON.stringify(stats));
+      }
+    }, 1000);
+  } else {
+    clearInterval(miniInterval);
+    btn.textContent = '▶ Démarrer';
+  }
+}
+
+updateMiniRing();
+loadDashboard();
+
+// Update streak
+const today = new Date().toDateString();
+const lastActive = localStorage.getItem('sh_last_active');
+if (lastActive !== today) {
+  const streak = parseInt(localStorage.getItem('sh_streak') || '0');
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  if (lastActive === yesterday.toDateString()) localStorage.setItem('sh_streak', streak+1);
+  else localStorage.setItem('sh_streak', '1');
+  localStorage.setItem('sh_last_active', today);
+}
+</script>
+</body>
+</html>
