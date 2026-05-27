@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyHub — Projets associatifs</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.stats-bar { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; flex: 1; min-width: 100px; }
+.stat-card .val { font-family: 'Clash Display', sans-serif; font-size: 1.6rem; font-weight: 700; }
+.stat-card .lbl { font-size: .72rem; color: var(--text-muted); margin-top: 2px; font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+
+.kanban { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+.kanban-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); min-width: 270px; flex: 1; display: flex; flex-direction: column; }
+.kanban-col-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.col-title { font-weight: 600; font-size: .88rem; display: flex; align-items: center; gap: 8px; font-family: 'Syne', sans-serif; }
+.col-dot { width: 9px; height: 9px; border-radius: 50%; }
+.col-count { background: var(--surface2); color: var(--text-muted); font-size: .72rem; padding: 2px 8px; border-radius: 99px; }
+.col-add { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; transition: color .2s; }
+.col-add:hover { color: var(--cyan); }
+.kanban-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+
+.proj-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; cursor: pointer; transition: border-color .2s, transform .15s; }
+.proj-card:hover { border-color: var(--cyan); transform: translateY(-1px); }
+.card-tag { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; margin-bottom: 8px; font-family: 'Syne', sans-serif; letter-spacing: .5px; text-transform: uppercase; }
+.card-title { font-weight: 600; font-size: .88rem; margin-bottom: 6px; }
+.card-desc { font-size: .78rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; font-size: .72rem; color: var(--text-muted); }
+.card-deadline.urgent { color: var(--pink); }
+.progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width .3s; }
+
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.overlay.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+.modal h2 { font-family: 'Clash Display', sans-serif; font-size: 1.3rem; margin-bottom: 20px; }
+.modal-close { float: right; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-family: 'Syne', sans-serif; font-size: .72rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.field input, .field textarea, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text); font-size: .88rem; outline: none; transition: border-color .2s; font-family: 'Syne', sans-serif; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--cyan); }
+.field textarea { resize: vertical; min-height: 70px; }
+.field-row { display: flex; gap: 12px; }
+.field-row .field { flex: 1; }
+.color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+.color-opt { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border-color .2s; }
+.color-opt.selected { border-color: white; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+.steps-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.step-item { display: flex; align-items: center; gap: 8px; background: var(--surface2); border-radius: var(--radius-sm); padding: 8px 12px; }
+.step-item input[type=checkbox] { accent-color: var(--cyan); width: 15px; height: 15px; }
+.step-item span { flex: 1; font-size: .83rem; }
+.step-item button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: .85rem; }
+.add-step { display: flex; gap: 8px; margin-top: 8px; }
+.add-step input { flex: 1; }
+.empty { color: var(--text-muted); font-size: .82rem; text-align: center; padding: 20px 0; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="nav">
+  <a class="nav-logo" href="index.html">S</a>
+  <a class="nav-link" href="index.html" title="Tableau de bord">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-label">Board</span>
+  </a>
+  <a class="nav-link" href="agenda.html" title="Agenda">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="nav-label">Agenda</span>
+  </a>
+  <a class="nav-link" href="tasks.html" title="Tâches">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span class="nav-label">Tâches</span>
+  </a>
+  <a class="nav-link" href="notes.html" title="Notes & Matières">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <span class="nav-label">Notes</span>
+  </a>
+  <a class="nav-link" href="pomodoro.html" title="Pomodoro">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span class="nav-label">Focus</span>
+  </a>
+  <a class="nav-link" href="carnet.html" title="Carnet de notes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    <span class="nav-label">Carnet</span>
+  </a>
+  <a class="nav-link active" href="projets.html" title="Projets associatifs">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="8" width="6" height="13" rx="1"/><rect x="16" y="5" width="6" height="16" rx="1"/></svg>
+    <span class="nav-label">Projets</span>
+  </a>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Projets associatifs</h1>
+      <p class="page-subtitle">Gestion de tes projets en mode Kanban</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal()">+ Nouveau projet</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card"><div class="val" id="s-total">0</div><div class="lbl">Total</div></div>
+    <div class="stat-card"><div class="val accent-yellow" id="s-todo">0</div><div class="lbl">À faire</div></div>
+    <div class="stat-card"><div class="val accent-cyan" id="s-doing">0</div><div class="lbl">En cours</div></div>
+    <div class="stat-card"><div class="val accent-green" id="s-done">0</div><div class="lbl">Terminés</div></div>
+  </div>
+
+  <div class="kanban">
+    <div class="kanban-col">
+      <div class="kanban-col-header">
+        <span class="col-title"><span class="col-dot" style="background:var(--yellow)"></span>À faire</span>
+        <span class="col-count" id="cnt-todo">0</span>
+        <button class="col-add" onclick="openModal('todo')" title="Ajouter">+</button>
+      </div>
+      <div class="kanban-cards" id="cards-todo"></div>
+    </div>
+    <div class="kanban-col">
+      <div class="kanban-col-header">
+        <span class="col-title"><span class="col-dot" style="background:var(--cyan)"></span>En cours</span>
+        <span class="col-count" id="cnt-doing">0</span>
+        <button class="col-add" onclick="openModal('doing')" title="Ajouter">+</button>
+      </div>
+      <div class="kanban-cards" id="cards-doing"></div>
+    </div>
+    <div class="kanban-col">
+      <div class="kanban-col-header">
+        <span class="col-title"><span class="col-dot" style="background:var(--violet)"></span>En révision</span>
+        <span class="col-count" id="cnt-review">0</span>
+        <button class="col-add" onclick="openModal('review')" title="Ajouter">+</button>
+      </div>
+      <div class="kanban-cards" id="cards-review"></div>
+    </div>
+    <div class="kanban-col">
+      <div class="kanban-col-header">
+        <span class="col-title"><span class="col-dot" style="background:var(--green)"></span>Terminé</span>
+        <span class="col-count" id="cnt-done">0</span>
+        <button class="col-add" onclick="openModal('done')" title="Ajouter">+</button>
+      </div>
+      <div class="kanban-cards" id="cards-done"></div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="modal-title">Nouveau projet</h2>
+    <div class="field"><label>Nom du projet *</label><input type="text" id="f-name" placeholder="Ex: Soirée de gala, Campagne affichage…"></div>
+    <div class="field"><label>Description</label><textarea id="f-desc" placeholder="Contexte, objectifs…"></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>Statut</label><select id="f-status"><option value="todo">À faire</option><option value="doing">En cours</option><option value="review">En révision</option><option value="done">Terminé</option></select></div>
+      <div class="field"><label>Deadline</label><input type="date" id="f-deadline"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Association</label><input type="text" id="f-asso" placeholder="BDE, Humanitaire…"></div>
+      <div class="field"><label>Responsable</label><input type="text" id="f-resp" placeholder="Prénom"></div>
+    </div>
+    <div class="field">
+      <label>Couleur</label>
+      <div class="color-picker">
+        <div class="color-opt selected" style="background:var(--cyan)" data-color="cyan" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:var(--pink)" data-color="pink" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:var(--yellow)" data-color="yellow" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:var(--green)" data-color="green" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:var(--violet)" data-color="violet" onclick="selectColor(this)"></div>
+        <div class="color-opt" style="background:var(--orange)" data-color="orange" onclick="selectColor(this)"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Étapes</label>
+      <div class="steps-list" id="steps-list"></div>
+      <div class="add-step">
+        <input type="text" id="f-step-input" placeholder="Ajouter une étape…" onkeydown="if(event.key==='Enter')addStep()">
+        <button class="btn btn-ghost" onclick="addStep()">+ Ajouter</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="btn-delete" onclick="deleteProject()" style="display:none">Supprimer</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveProject()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = { cyan:'var(--cyan)', pink:'var(--pink)', yellow:'var(--yellow)', green:'var(--green)', violet:'var(--violet)', orange:'var(--orange)' };
+const COLORS_HEX = { cyan:'#00e5ff', pink:'#ff3d82', yellow:'#ffe033', green:'#3dffa0', violet:'#b56eff', orange:'#ff7a3d' };
+let projects = JSON.parse(localStorage.getItem('sh_projects') || '[]');
+let editId = null, selectedColor = 'cyan', steps = [];
+function save() { localStorage.setItem('sh_projects', JSON.stringify(projects)); }
+function render() {
+  const cols = { todo:[], doing:[], review:[], done:[] };
+  projects.forEach(p => { if(cols[p.status]) cols[p.status].push(p); });
+  Object.entries(cols).forEach(([status, list]) => {
+    const el = document.getElementById('cards-'+status);
+    document.getElementById('cnt-'+status).textContent = list.length;
+    if(!list.length) { el.innerHTML = '<div class="empty">Aucun projet</div>'; return; }
+    el.innerHTML = list.map(p => {
+      const done = p.steps ? p.steps.filter(s=>s.done).length : 0;
+      const total = p.steps ? p.steps.length : 0;
+      const pct = total ? Math.round(done/total*100) : 0;
+      const color = COLORS_HEX[p.color] || COLORS_HEX.cyan;
+      const now = new Date(); const dl = p.deadline ? new Date(p.deadline) : null;
+      const urgent = dl && (dl-now)<86400000*3 && status!=='done';
+      return `<div class="proj-card" onclick="editProject('${p.id}')">
+        <div class="card-tag" style="background:${color}22;color:${color}">${p.asso||'Perso'}</div>
+        <div class="card-title">${p.name}</div>
+        ${p.desc?`<div class="card-desc">${p.desc.substring(0,80)}${p.desc.length>80?'…':''}</div>`:''}
+        <div class="card-footer">
+          <span class="card-deadline ${urgent?'urgent':''}">${dl?'📅 '+dl.toLocaleDateString('fr-FR'):''}</span>
+          ${p.resp?`<span>👤 ${p.resp}</span>`:''}
+        </div>
+        ${total?`<div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>`:''}
+      </div>`;
+    }).join('');
+  });
+  document.getElementById('s-total').textContent = projects.length;
+  document.getElementById('s-todo').textContent = cols.todo.length;
+  document.getElementById('s-doing').textContent = cols.doing.length;
+  document.getElementById('s-done').textContent = cols.done.length;
+}
+function openModal(status='todo') {
+  editId=null; selectedColor='cyan'; steps=[];
+  document.getElementById('f-name').value=''; document.getElementById('f-desc').value='';
+  document.getElementById('f-status').value=status; document.getElementById('f-deadline').value='';
+  document.getElementById('f-asso').value=''; document.getElementById('f-resp').value='';
+  document.getElementById('btn-delete').style.display='none';
+  document.getElementById('modal-title').textContent='Nouveau projet';
+  updateColorUI(); renderSteps();
+  document.getElementById('overlay').classList.add('open');
+}
+function editProject(id) {
+  const p = projects.find(x=>x.id===id); if(!p) return;
+  editId=id; selectedColor=p.color||'cyan'; steps=p.steps?[...p.steps]:[];
+  document.getElementById('f-name').value=p.name; document.getElementById('f-desc').value=p.desc||'';
+  document.getElementById('f-status').value=p.status; document.getElementById('f-deadline').value=p.deadline||'';
+  document.getElementById('f-asso').value=p.asso||''; document.getElementById('f-resp').value=p.resp||'';
+  document.getElementById('btn-delete').style.display='inline-flex';
+  document.getElementById('modal-title').textContent='Modifier le projet';
+  updateColorUI(); renderSteps();
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function selectColor(el) { selectedColor=el.dataset.color; updateColorUI(); }
+function updateColorUI() { document.querySelectorAll('.color-opt').forEach(e=>e.classList.toggle('selected', e.dataset.color===selectedColor)); }
+function addStep() {
+  const v=document.getElementById('f-step-input').value.trim(); if(!v) return;
+  steps.push({id:Date.now().toString(), text:v, done:false});
+  document.getElementById('f-step-input').value=''; renderSteps();
+}
+function toggleStep(id) { const s=steps.find(x=>x.id===id); if(s) s.done=!s.done; renderSteps(); }
+function removeStep(id) { steps=steps.filter(x=>x.id!==id); renderSteps(); }
+function renderSteps() {
+  const el=document.getElementById('steps-list');
+  el.innerHTML=steps.map(s=>`<div class="step-item"><input type="checkbox" ${s.done?'checked':''} onchange="toggleStep('${s.id}')"><span style="${s.done?'text-decoration:line-through;opacity:.5':''}">${s.text}</span><button onclick="removeStep('${s.id}')">✕</button></div>`).join('')||'<div style="color:var(--text-muted);font-size:.8rem">Aucune étape</div>';
+}
+function saveProject() {
+  const name=document.getElementById('f-name').value.trim(); if(!name){alert('Le nom est requis');return;}
+  const proj={id:editId||Date.now().toString(), name, desc:document.getElementById('f-desc').value.trim(), status:document.getElementById('f-status').value, deadline:document.getElementById('f-deadline').value, asso:document.getElementById('f-asso').value.trim(), resp:document.getElementById('f-resp').value.trim(), color:selectedColor, steps:[...steps]};
+  if(editId) projects=projects.map(p=>p.id===editId?proj:p); else projects.unshift(proj);
+  save(); render(); closeModal();
+}
+function deleteProject() {
+  if(!confirm('Supprimer ce projet ?')) return;
+  projects=projects.filter(p=>p.id!==editId); save(); render(); closeModal();
+}
+render();
+</script>
+</body>
+</html>
