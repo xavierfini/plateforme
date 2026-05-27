@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudyHub — Au-delà des étoiles</title>
+<title>StudyHub — Ma Bibliothèque</title>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* Étoiles */
@@ -11,14 +11,27 @@
 .star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--dur,3s) infinite ease-in-out var(--delay,0s);}
 @keyframes twinkle{0%,100%{opacity:.08}50%{opacity:.6}}
 
-.book-layout { display: grid; grid-template-columns: 230px 1fr 220px; gap: 0; height: calc(100vh - 52px); position: relative; z-index: 5; overflow: hidden; }
-@media(max-width:1100px){ .book-layout { grid-template-columns: 200px 1fr; } .book-right { display:none; } }
+.book-layout { display: grid; grid-template-columns: 260px 1fr 220px; gap: 0; height: calc(100vh - 52px); position: relative; z-index: 5; overflow: hidden; }
+@media(max-width:1100px){ .book-layout { grid-template-columns: 240px 1fr; } .book-right { display:none; } }
 @media(max-width:700px){ .book-layout { grid-template-columns: 1fr; } .book-left { display:none; } }
 
-/* LEFT */
+/* LEFT PANEL */
 .book-left { border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
-.panel-head { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.panel-head h3 { font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.panel-head { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.panel-head h3 { font-family: 'Syne', sans-serif; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.panel-back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: .78rem; font-family: 'Syne', sans-serif; display: flex; align-items: center; gap: 4px; transition: color .2s; padding: 0; }
+.panel-back:hover { color: #f59e0b; }
+
+/* BOOKS LIST */
+.books-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.book-item { padding: 12px 14px; border-radius: var(--radius-sm); cursor: pointer; transition: all .2s; border: 1px solid transparent; background: var(--surface2); display: flex; flex-direction: column; gap: 4px; }
+.book-item:hover { border-color: rgba(245,158,11,.4); }
+.book-item.active { border-color: #f59e0b; background: rgba(245,158,11,.08); }
+.book-item-title { font-size: .9rem; font-weight: 600; }
+.book-item-meta { font-family: 'Syne', sans-serif; font-size: .68rem; color: var(--text-muted); display: flex; gap: 8px; }
+.book-item-genre { font-size: .65rem; font-weight: 700; padding: 2px 7px; border-radius: 99px; font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: .5px; background: rgba(245,158,11,.15); color: #f59e0b; align-self: flex-start; }
+
+/* CHAPTERS LIST */
 .chapters-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 3px; }
 .chapter-item { padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all .2s; border: 1px solid transparent; }
 .chapter-item:hover { background: var(--surface2); }
@@ -26,7 +39,8 @@
 .chap-num { font-family: 'Syne', sans-serif; font-size: .65rem; color: #f59e0b; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
 .chap-title { font-size: .83rem; font-weight: 500; margin-top: 2px; }
 .chap-words { font-size: .68rem; color: var(--text-muted); margin-top: 2px; font-family: 'Syne', sans-serif; }
-.panel-footer { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--surface); }
+
+.panel-footer { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
 .prog-label { font-family: 'Syne', sans-serif; font-size: .68rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px; }
 .prog-bar { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
 .prog-fill { height: 100%; background: linear-gradient(90deg, var(--violet), #f59e0b); border-radius: 3px; transition: width .4s; }
@@ -49,6 +63,11 @@
 .book-editor { background: transparent; border: none; color: var(--text); font-family: Georgia, serif; font-size: 1.05rem; line-height: 1.9; outline: none; resize: none; width: 100%; min-height: 500px; caret-color: #f59e0b; }
 .book-editor::placeholder { color: var(--text-muted); font-style: italic; }
 
+/* Empty state center */
+.center-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--text-muted); padding: 40px; text-align: center; }
+.center-empty .big { font-size: 3rem; }
+.center-empty p { font-family: 'Syne', sans-serif; font-size: .88rem; }
+
 /* RIGHT */
 .book-right { border-left: 1px solid var(--border); overflow-y: auto; background: var(--surface); }
 .rp-sect { padding: 16px; border-bottom: 1px solid var(--border); }
@@ -67,12 +86,12 @@
 /* MODALS */
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
 .overlay.open { display: flex; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 420px; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 440px; }
 .modal h3 { font-family: 'Clash Display', sans-serif; font-size: 1.15rem; margin-bottom: 16px; }
 .field { margin-bottom: 12px; }
 .field label { display: block; font-family: 'Syne', sans-serif; font-size: .72rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-.field input, .field textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-size: .88rem; outline: none; font-family: 'Syne', sans-serif; }
-.field input:focus, .field textarea:focus { border-color: #f59e0b; }
+.field input, .field textarea, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-size: .88rem; outline: none; font-family: 'Syne', sans-serif; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: #f59e0b; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 </style>
 </head>
@@ -97,45 +116,67 @@
   <a class="nav-link" href="import-export.html" title="Données"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg><span class="nav-label">Données</span></a>
 </nav>
 
-<main class="main">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Livre Au-delà des étoiles</h1>
-      <p class="page-subtitle">Modification en direct du livre</p>
-    </div>
-  </div>
-  
 <div class="book-layout" style="position:relative;z-index:5">
-  <!-- LEFT -->
+
+  <!-- LEFT PANEL (books list OR chapters list) -->
   <div class="book-left">
-    <div class="panel-head">
-      <h3>✦ Chapitres</h3>
-      <button class="btn btn-primary" style="padding:5px 12px;font-size:.78rem" onclick="openNewChap()">+</button>
+
+    <!-- VIEW: BOOKS LIST -->
+    <div id="view-books" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+      <div class="panel-head">
+        <h3>📚 Mes livres</h3>
+        <button class="btn btn-primary" style="padding:5px 12px;font-size:.78rem" onclick="openNewBook()">+ Livre</button>
+      </div>
+      <div class="books-list" id="books-list"></div>
     </div>
-    <div class="chapters-list" id="chapters-list"></div>
-    <div class="panel-footer">
-      <div class="prog-label"><span>Progression</span><span id="word-goal-lbl">0 / 50 000</span></div>
-      <div class="prog-bar"><div class="prog-fill" id="global-prog" style="width:0%"></div></div>
+
+    <!-- VIEW: CHAPTERS LIST (shown when a book is open) -->
+    <div id="view-chapters" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div class="panel-head">
+        <button class="panel-back" onclick="backToBooks()">← Livres</button>
+        <button class="btn btn-primary" style="padding:5px 12px;font-size:.78rem" onclick="openNewChap()">+</button>
+      </div>
+      <div style="padding:10px 14px 0;flex-shrink:0">
+        <div id="current-book-title" style="font-family:'Clash Display',sans-serif;font-size:.95rem;font-weight:700;line-height:1.2;margin-bottom:2px"></div>
+        <div id="current-book-genre" style="font-family:'Syne',sans-serif;font-size:.68rem;color:#f59e0b;text-transform:uppercase;letter-spacing:.08em"></div>
+      </div>
+      <div class="chapters-list" id="chapters-list" style="margin-top:8px"></div>
+      <div class="panel-footer">
+        <div class="prog-label"><span>Progression</span><span id="word-goal-lbl">0 / 50 000</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="global-prog" style="width:0%"></div></div>
+      </div>
     </div>
+
   </div>
 
   <!-- CENTER -->
   <div class="book-center">
-    <div class="book-toolbar">
-      <input type="text" id="chap-title-input" placeholder="Titre du chapitre…" oninput="updateChapTitle()">
-      <div class="tb-sep"></div>
-      <button class="tb-btn" onclick="ins('*italique*')"><i>I</i></button>
-      <button class="tb-btn" onclick="ins('**gras**')"><b>B</b></button>
-      <button class="tb-btn" onclick="ins('—')">—</button>
-      <button class="tb-btn" onclick="ins('\n\n* * *\n\n')">***</button>
-      <div class="tb-sep"></div>
-      <span class="autosave" id="autosave-badge">✓ Sauvegardé</span>
+    <!-- Empty state: no book selected -->
+    <div id="center-empty" class="center-empty">
+      <div class="big">✦</div>
+      <p>Sélectionne un livre ou crée-en un nouveau<br>pour commencer à écrire.</p>
+      <button class="btn btn-primary" onclick="openNewBook()">+ Nouveau livre</button>
     </div>
-    <div class="writing-area">
-      <div class="page-wrap">
-        <div class="chap-num-disp" id="chap-num-disp">Chapitre 1</div>
-        <div class="chap-title-disp" id="chap-title-disp">Sans titre</div>
-        <textarea class="book-editor" id="book-editor" placeholder="Il était une fois, au-delà des étoiles…" oninput="onEditorInput()"></textarea>
+
+    <!-- Editor (shown when a chapter is selected) -->
+    <div id="center-editor" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div class="book-toolbar">
+        <input type="text" id="chap-title-input" placeholder="Titre du chapitre…" oninput="updateChapTitle()">
+        <div class="tb-sep"></div>
+        <button class="tb-btn" onclick="ins('*italique*')"><i>I</i></button>
+        <button class="tb-btn" onclick="ins('**gras**')"><b>B</b></button>
+        <button class="tb-btn" onclick="ins('—')">—</button>
+        <button class="tb-btn" onclick="ins('\n\n* * *\n\n')">***</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" onclick="openEditBook()" title="Paramètres du livre">⚙</button>
+        <span class="autosave" id="autosave-badge">✓ Sauvegardé</span>
+      </div>
+      <div class="writing-area">
+        <div class="page-wrap">
+          <div class="chap-num-disp" id="chap-num-disp">Chapitre 1</div>
+          <div class="chap-title-disp" id="chap-title-disp">Sans titre</div>
+          <textarea class="book-editor" id="book-editor" placeholder="Il était une fois…" oninput="onEditorInput()"></textarea>
+        </div>
       </div>
     </div>
   </div>
@@ -143,14 +184,14 @@
   <!-- RIGHT -->
   <div class="book-right">
     <div class="rp-sect">
-      <div class="rp-title">✦ Au-delà des étoiles</div>
+      <div class="rp-title" id="rp-book-name">✦ Mon livre</div>
       <div class="rp-stat"><span>Chapitres</span><span class="v" id="rp-chaps">0</span></div>
       <div class="rp-stat"><span>Mots total</span><span class="v" id="rp-words">0</span></div>
       <div class="rp-stat"><span>Ce chapitre</span><span class="v" id="rp-cw">0</span></div>
       <div class="rp-stat"><span>Lecture</span><span class="v" id="rp-read">0 min</span></div>
     </div>
     <div class="rp-sect">
-      <div class="rp-title">📝 Notes</div>
+      <div class="rp-title">📝 Notes du chapitre</div>
       <textarea class="note-area" id="chap-notes" placeholder="Idées, corrections…" oninput="saveNotes()"></textarea>
     </div>
     <div class="rp-sect">
@@ -166,9 +207,25 @@
     </div>
   </div>
 </div>
-</main>
 
-<!-- MODALS -->
+<!-- MODAL: Nouveau / éditer livre -->
+<div class="overlay" id="book-overlay">
+  <div class="modal">
+    <h3 id="book-modal-title">✦ Nouveau livre</h3>
+    <div class="field"><label>Titre *</label><input type="text" id="b-title" placeholder="Au-delà des étoiles…"></div>
+    <div class="field"><label>Sous-titre</label><input type="text" id="b-subtitle" placeholder="Optionnel"></div>
+    <div class="field"><label>Genre</label><input type="text" id="b-genre" placeholder="Fantasy, SF, Romance…"></div>
+    <div class="field"><label>Objectif (mots)</label><input type="number" id="b-goal" value="50000" min="100"></div>
+    <div class="field"><label>Synopsis</label><textarea id="b-synopsis" placeholder="Résumé de l'histoire…" style="min-height:70px"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="b-btn-delete" onclick="deleteBook()" style="display:none">Supprimer</button>
+      <button class="btn btn-ghost" onclick="closeBookModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveBook()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nouveau chapitre -->
 <div class="overlay" id="chap-overlay">
   <div class="modal">
     <h3>✦ Nouveau chapitre</h3>
@@ -180,6 +237,8 @@
     </div>
   </div>
 </div>
+
+<!-- MODAL: Nouveau personnage -->
 <div class="overlay" id="char-overlay">
   <div class="modal">
     <h3>👤 Nouveau personnage</h3>
@@ -194,66 +253,348 @@
 </div>
 
 <script>
-(function(){const el=document.getElementById('stars');for(let i=0;i<100;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2+.5;s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--delay:${Math.random()*5}s`;el.appendChild(s);}})();
+// ── Étoiles ──────────────────────────────────────────────────────────────────
+(function(){
+  const el=document.getElementById('stars');
+  for(let i=0;i<100;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*2+.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--delay:${Math.random()*5}s`;
+    el.appendChild(s);
+  }
+})();
 
-let book = JSON.parse(localStorage.getItem('sh_livre') || JSON.stringify({chapters:[],characters:[],goal:50000,dailyGoal:500,wordsByDay:{}}));
-let currentId=null, saveTimer=null;
-const TODAY=new Date().toISOString().substring(0,10);
-function saveBook(){localStorage.setItem('sh_livre',JSON.stringify(book));const b=document.getElementById('autosave-badge');b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2000);}
-function cw(text){return text.trim()?text.trim().split(/\s+/).length:0;}
-function totalWords(){return book.chapters.reduce((s,c)=>s+cw(c.text||''),0);}
-function renderChapters(){
-  const el=document.getElementById('chapters-list');
-  el.innerHTML=book.chapters.map((c,i)=>`<div class="chapter-item ${c.id===currentId?'active':''}" onclick="loadChapter('${c.id}')"><div class="chap-num">Chapitre ${i+1}</div><div class="chap-title">${c.title||'Sans titre'}</div><div class="chap-words">${cw(c.text||'').toLocaleString('fr-FR')} mots</div></div>`).join('')||'<div style="color:var(--text-muted);font-size:.78rem;padding:16px;text-align:center">Aucun chapitre</div>';
-  const tw=totalWords(); const pct=Math.min(100,Math.round(tw/book.goal*100));
-  document.getElementById('global-prog').style.width=pct+'%';
-  document.getElementById('word-goal-lbl').textContent=tw.toLocaleString('fr-FR')+' / '+book.goal.toLocaleString('fr-FR');
+// ── État global ───────────────────────────────────────────────────────────────
+// Structure: { books: [ { id, title, subtitle, genre, goal, synopsis, chapters, characters, wordsByDay } ] }
+let library = JSON.parse(localStorage.getItem('sh_library') || 'null');
+
+// Migration: ancien format sh_livre → nouveau format
+if (!library) {
+  const old = localStorage.getItem('sh_livre');
+  if (old) {
+    const b = JSON.parse(old);
+    library = { books: [{ id: Date.now().toString(), title: 'Au-delà des étoiles', subtitle: '', genre: '', goal: b.goal||50000, synopsis: '', chapters: b.chapters||[], characters: b.characters||[], wordsByDay: b.wordsByDay||{} }] };
+  } else {
+    library = { books: [] };
+  }
+  saveLibrary();
 }
-function renderStats(){
-  const tw=totalWords(); const chap=book.chapters.find(c=>c.id===currentId); const cws=chap?cw(chap.text||''):0;
-  document.getElementById('rp-chaps').textContent=book.chapters.length;
-  document.getElementById('rp-words').textContent=tw.toLocaleString('fr-FR');
-  document.getElementById('rp-cw').textContent=cws.toLocaleString('fr-FR');
-  document.getElementById('rp-read').textContent=Math.ceil(tw/200)+' min';
-  const dw=book.wordsByDay[TODAY]||0; document.getElementById('rp-today').textContent=dw+' mots';
-  document.getElementById('daily-prog').style.width=Math.min(100,Math.round(dw/book.dailyGoal*100))+'%';
+
+let currentBookId = null;   // livre ouvert
+let currentChapId = null;   // chapitre ouvert
+let saveTimer = null;
+let editBookId = null;       // livre en cours d'édition dans le modal
+const TODAY = new Date().toISOString().substring(0,10);
+
+function saveLibrary() {
+  localStorage.setItem('sh_library', JSON.stringify(library));
+  const b = document.getElementById('autosave-badge');
+  if (b) { b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),2000); }
 }
-function renderChars(){
-  document.getElementById('chars-list').innerHTML=book.characters.map(c=>`<div class="char-item"><div><div style="font-weight:600">${c.name}</div><div style="color:var(--text-muted);font-size:.72rem">${c.role||'—'}</div></div><button onclick="removeChar('${c.id}')">✕</button></div>`).join('')||'<div style="color:var(--text-muted);font-size:.75rem;text-align:center;padding:8px">Aucun</div>';
+
+function currentBook() { return library.books.find(b=>b.id===currentBookId) || null; }
+function currentChap() { const bk=currentBook(); return bk ? bk.chapters.find(c=>c.id===currentChapId) : null; }
+function cw(text){ return text.trim() ? text.trim().split(/\s+/).length : 0; }
+function totalWords(book){ return (book.chapters||[]).reduce((s,c)=>s+cw(c.text||''),0); }
+
+// ── RENDU BIBLIOTHÈQUE ────────────────────────────────────────────────────────
+function renderBooks() {
+  const el = document.getElementById('books-list');
+  if (!library.books.length) {
+    el.innerHTML = `<div style="color:var(--text-muted);font-size:.8rem;text-align:center;padding:30px 16px">
+      Aucun livre — crée-en un !
+    </div>`;
+    return;
+  }
+  el.innerHTML = library.books.map(b => {
+    const tw = totalWords(b);
+    const pct = Math.min(100, Math.round(tw/(b.goal||50000)*100));
+    return `<div class="book-item ${b.id===currentBookId?'active':''}" onclick="openBook('${b.id}')">
+      ${b.genre ? `<span class="book-item-genre">${b.genre}</span>` : ''}
+      <div class="book-item-title">${b.title}</div>
+      ${b.subtitle ? `<div style="font-size:.78rem;color:var(--text-muted)">${b.subtitle}</div>` : ''}
+      <div class="book-item-meta">
+        <span>${(b.chapters||[]).length} chap.</span>
+        <span>${tw.toLocaleString('fr-FR')} mots</span>
+        <span>${pct}%</span>
+      </div>
+    </div>`;
+  }).join('');
 }
-function loadChapter(id){
-  currentId=id; const c=book.chapters.find(x=>x.id===id); if(!c)return;
-  const idx=book.chapters.findIndex(x=>x.id===id);
-  document.getElementById('chap-title-input').value=c.title||'';
-  document.getElementById('book-editor').value=c.text||'';
-  document.getElementById('chap-notes').value=c.notes||'';
-  document.getElementById('chap-num-disp').textContent='Chapitre '+(idx+1);
-  document.getElementById('chap-title-disp').textContent=c.title||'Sans titre';
-  renderChapters(); renderStats();
+
+// ── OUVRIR UN LIVRE ───────────────────────────────────────────────────────────
+function openBook(id) {
+  currentBookId = id;
+  currentChapId = null;
+  const bk = currentBook();
+  if (!bk) return;
+
+  // Basculer vue gauche
+  document.getElementById('view-books').style.display = 'none';
+  document.getElementById('view-chapters').style.display = 'flex';
+
+  // Titre & genre du livre
+  document.getElementById('current-book-title').textContent = bk.title;
+  document.getElementById('current-book-genre').textContent = bk.genre || '';
+
+  // Panneau droit
+  document.getElementById('rp-book-name').textContent = '✦ ' + bk.title;
+
+  // Centre : vider l'éditeur, montrer empty state
+  document.getElementById('center-empty').style.display = 'flex';
+  document.getElementById('center-editor').style.display = 'none';
+  document.getElementById('book-editor').value = '';
+  document.getElementById('chap-title-input').value = '';
+  document.getElementById('chap-title-disp').textContent = 'Sans titre';
+  document.getElementById('chap-num-disp').textContent = '';
+  document.getElementById('chap-notes').value = '';
+
+  renderChapters();
+  renderChars();
+  renderStats();
+  renderBooks(); // mettre à jour la surbrillance
 }
-function onEditorInput(){
-  if(!currentId)return; clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{
-    const chap=book.chapters.find(c=>c.id===currentId); if(!chap)return;
-    const prev=cw(chap.text||''); chap.text=document.getElementById('book-editor').value;
-    const diff=cw(chap.text)-prev; if(diff>0) book.wordsByDay[TODAY]=(book.wordsByDay[TODAY]||0)+diff;
-    saveBook(); renderChapters(); renderStats();
-  },600);
+
+function backToBooks() {
+  currentBookId = null;
+  currentChapId = null;
+  document.getElementById('view-books').style.display = 'flex';
+  document.getElementById('view-chapters').style.display = 'none';
+  document.getElementById('center-empty').style.display = 'flex';
+  document.getElementById('center-editor').style.display = 'none';
+  renderBooks();
 }
-function updateChapTitle(){
-  const v=document.getElementById('chap-title-input').value;
-  document.getElementById('chap-title-disp').textContent=v||'Sans titre';
-  const c=book.chapters.find(x=>x.id===currentId); if(c){c.title=v;saveBook();renderChapters();}
+
+// ── RENDU CHAPITRES ───────────────────────────────────────────────────────────
+function renderChapters() {
+  const bk = currentBook(); if (!bk) return;
+  const el = document.getElementById('chapters-list');
+  el.innerHTML = (bk.chapters||[]).map((c,i) => `
+    <div class="chapter-item ${c.id===currentChapId?'active':''}" onclick="loadChapter('${c.id}')">
+      <div class="chap-num">Chapitre ${i+1}</div>
+      <div class="chap-title">${c.title||'Sans titre'}</div>
+      <div class="chap-words">${cw(c.text||'').toLocaleString('fr-FR')} mots</div>
+    </div>`).join('') || '<div style="color:var(--text-muted);font-size:.78rem;padding:16px;text-align:center">Aucun chapitre</div>';
+
+  const tw = totalWords(bk);
+  const goal = bk.goal || 50000;
+  const pct = Math.min(100, Math.round(tw/goal*100));
+  document.getElementById('global-prog').style.width = pct+'%';
+  document.getElementById('word-goal-lbl').textContent = tw.toLocaleString('fr-FR')+' / '+goal.toLocaleString('fr-FR');
 }
-function saveNotes(){const c=book.chapters.find(x=>x.id===currentId);if(c){c.notes=document.getElementById('chap-notes').value;saveBook();}}
-function ins(text){const ta=document.getElementById('book-editor');const s=ta.selectionStart,e=ta.selectionEnd;ta.value=ta.value.substring(0,s)+text+ta.value.substring(e);ta.selectionStart=ta.selectionEnd=s+text.length;ta.focus();onEditorInput();}
-function openNewChap(){document.getElementById('new-chap-title').value='';document.getElementById('new-chap-note').value='';document.getElementById('chap-overlay').classList.add('open');}
-function addChapter(){const title=document.getElementById('new-chap-title').value.trim()||'Sans titre';const notes=document.getElementById('new-chap-note').value.trim();const c={id:Date.now().toString(),title,text:'',notes};book.chapters.push(c);saveBook();document.getElementById('chap-overlay').classList.remove('open');loadChapter(c.id);}
-function openNewChar(){document.getElementById('char-name').value='';document.getElementById('char-role').value='';document.getElementById('char-desc').value='';document.getElementById('char-overlay').classList.add('open');}
-function addCharacter(){const name=document.getElementById('char-name').value.trim();if(!name)return;book.characters.push({id:Date.now().toString(),name,role:document.getElementById('char-role').value.trim(),desc:document.getElementById('char-desc').value.trim()});saveBook();renderChars();document.getElementById('char-overlay').classList.remove('open');}
-function removeChar(id){book.characters=book.characters.filter(c=>c.id!==id);saveBook();renderChars();}
-if(book.chapters.length) loadChapter(book.chapters[0].id);
-renderChars(); renderStats();
+
+// ── RENDU STATS DROITE ────────────────────────────────────────────────────────
+function renderStats() {
+  const bk = currentBook();
+  const tw = bk ? totalWords(bk) : 0;
+  const chap = currentChap();
+  const cws = chap ? cw(chap.text||'') : 0;
+  document.getElementById('rp-chaps').textContent = bk ? (bk.chapters||[]).length : 0;
+  document.getElementById('rp-words').textContent = tw.toLocaleString('fr-FR');
+  document.getElementById('rp-cw').textContent = cws.toLocaleString('fr-FR');
+  document.getElementById('rp-read').textContent = Math.ceil(tw/200)+' min';
+  const dw = bk ? (bk.wordsByDay||{})[TODAY]||0 : 0;
+  document.getElementById('rp-today').textContent = dw+' mots';
+  document.getElementById('daily-prog').style.width = Math.min(100, Math.round(dw/500*100))+'%';
+}
+
+// ── PERSONNAGES ───────────────────────────────────────────────────────────────
+function renderChars() {
+  const bk = currentBook();
+  const chars = bk ? (bk.characters||[]) : [];
+  document.getElementById('chars-list').innerHTML = chars.map(c =>
+    `<div class="char-item">
+      <div><div style="font-weight:600">${c.name}</div><div style="color:var(--text-muted);font-size:.72rem">${c.role||'—'}</div></div>
+      <button onclick="removeChar('${c.id}')">✕</button>
+    </div>`).join('') || '<div style="color:var(--text-muted);font-size:.75rem;text-align:center;padding:8px">Aucun</div>';
+}
+
+// ── CHARGER UN CHAPITRE ───────────────────────────────────────────────────────
+function loadChapter(id) {
+  const bk = currentBook(); if (!bk) return;
+  currentChapId = id;
+  const c = (bk.chapters||[]).find(x=>x.id===id); if (!c) return;
+  const idx = (bk.chapters||[]).findIndex(x=>x.id===id);
+
+  document.getElementById('center-empty').style.display = 'none';
+  document.getElementById('center-editor').style.display = 'flex';
+
+  document.getElementById('chap-title-input').value = c.title||'';
+  document.getElementById('book-editor').value = c.text||'';
+  document.getElementById('chap-notes').value = c.notes||'';
+  document.getElementById('chap-num-disp').textContent = 'Chapitre '+(idx+1);
+  document.getElementById('chap-title-disp').textContent = c.title||'Sans titre';
+
+  renderChapters();
+  renderStats();
+}
+
+// ── ÉDITEUR ───────────────────────────────────────────────────────────────────
+function onEditorInput() {
+  if (!currentChapId) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    const bk = currentBook(); if (!bk) return;
+    const chap = (bk.chapters||[]).find(c=>c.id===currentChapId); if (!chap) return;
+    const prev = cw(chap.text||'');
+    chap.text = document.getElementById('book-editor').value;
+    const diff = cw(chap.text) - prev;
+    if (diff > 0) { bk.wordsByDay = bk.wordsByDay||{}; bk.wordsByDay[TODAY] = (bk.wordsByDay[TODAY]||0)+diff; }
+    saveLibrary();
+    renderChapters();
+    renderStats();
+  }, 600);
+}
+
+function updateChapTitle() {
+  const v = document.getElementById('chap-title-input').value;
+  document.getElementById('chap-title-disp').textContent = v||'Sans titre';
+  const bk = currentBook(); if (!bk) return;
+  const c = (bk.chapters||[]).find(x=>x.id===currentChapId);
+  if (c) { c.title = v; saveLibrary(); renderChapters(); }
+}
+
+function saveNotes() {
+  const bk = currentBook(); if (!bk) return;
+  const c = (bk.chapters||[]).find(x=>x.id===currentChapId);
+  if (c) { c.notes = document.getElementById('chap-notes').value; saveLibrary(); }
+}
+
+function ins(text) {
+  const ta = document.getElementById('book-editor');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.value = ta.value.substring(0,s)+text+ta.value.substring(e);
+  ta.selectionStart = ta.selectionEnd = s+text.length;
+  ta.focus();
+  onEditorInput();
+}
+
+// ── MODAL LIVRE ───────────────────────────────────────────────────────────────
+function openNewBook() {
+  editBookId = null;
+  document.getElementById('book-modal-title').textContent = '✦ Nouveau livre';
+  document.getElementById('b-title').value = '';
+  document.getElementById('b-subtitle').value = '';
+  document.getElementById('b-genre').value = '';
+  document.getElementById('b-goal').value = '50000';
+  document.getElementById('b-synopsis').value = '';
+  document.getElementById('b-btn-delete').style.display = 'none';
+  document.getElementById('book-overlay').classList.add('open');
+}
+
+function openEditBook() {
+  const bk = currentBook(); if (!bk) return;
+  editBookId = bk.id;
+  document.getElementById('book-modal-title').textContent = '✎ Modifier le livre';
+  document.getElementById('b-title').value = bk.title||'';
+  document.getElementById('b-subtitle').value = bk.subtitle||'';
+  document.getElementById('b-genre').value = bk.genre||'';
+  document.getElementById('b-goal').value = bk.goal||50000;
+  document.getElementById('b-synopsis').value = bk.synopsis||'';
+  document.getElementById('b-btn-delete').style.display = 'inline-flex';
+  document.getElementById('book-overlay').classList.add('open');
+}
+
+function closeBookModal() { document.getElementById('book-overlay').classList.remove('open'); }
+
+function saveBook() {
+  const title = document.getElementById('b-title').value.trim();
+  if (!title) { alert('Le titre est requis'); return; }
+  if (editBookId) {
+    const bk = library.books.find(b=>b.id===editBookId);
+    if (bk) {
+      bk.title = title;
+      bk.subtitle = document.getElementById('b-subtitle').value.trim();
+      bk.genre = document.getElementById('b-genre').value.trim();
+      bk.goal = parseInt(document.getElementById('b-goal').value)||50000;
+      bk.synopsis = document.getElementById('b-synopsis').value.trim();
+      // Mettre à jour l'affichage
+      document.getElementById('current-book-title').textContent = bk.title;
+      document.getElementById('current-book-genre').textContent = bk.genre||'';
+      document.getElementById('rp-book-name').textContent = '✦ '+bk.title;
+    }
+  } else {
+    const bk = {
+      id: Date.now().toString(),
+      title,
+      subtitle: document.getElementById('b-subtitle').value.trim(),
+      genre: document.getElementById('b-genre').value.trim(),
+      goal: parseInt(document.getElementById('b-goal').value)||50000,
+      synopsis: document.getElementById('b-synopsis').value.trim(),
+      chapters: [],
+      characters: [],
+      wordsByDay: {}
+    };
+    library.books.unshift(bk);
+    saveLibrary();
+    closeBookModal();
+    renderBooks();
+    openBook(bk.id);
+    return;
+  }
+  saveLibrary();
+  closeBookModal();
+  renderBooks();
+  renderChapters();
+}
+
+function deleteBook() {
+  if (!confirm('Supprimer ce livre et tous ses chapitres ?')) return;
+  library.books = library.books.filter(b=>b.id!==editBookId);
+  saveLibrary();
+  closeBookModal();
+  backToBooks();
+}
+
+// ── MODAL CHAPITRE ────────────────────────────────────────────────────────────
+function openNewChap() {
+  document.getElementById('new-chap-title').value = '';
+  document.getElementById('new-chap-note').value = '';
+  document.getElementById('chap-overlay').classList.add('open');
+}
+
+function addChapter() {
+  const bk = currentBook(); if (!bk) return;
+  const title = document.getElementById('new-chap-title').value.trim()||'Sans titre';
+  const notes = document.getElementById('new-chap-note').value.trim();
+  const c = { id: Date.now().toString(), title, text: '', notes };
+  if (!bk.chapters) bk.chapters = [];
+  bk.chapters.push(c);
+  saveLibrary();
+  document.getElementById('chap-overlay').classList.remove('open');
+  loadChapter(c.id);
+}
+
+// ── MODAL PERSONNAGE ──────────────────────────────────────────────────────────
+function openNewChar() {
+  document.getElementById('char-name').value = '';
+  document.getElementById('char-role').value = '';
+  document.getElementById('char-desc').value = '';
+  document.getElementById('char-overlay').classList.add('open');
+}
+
+function addCharacter() {
+  const bk = currentBook(); if (!bk) return;
+  const name = document.getElementById('char-name').value.trim();
+  if (!name) return;
+  if (!bk.characters) bk.characters = [];
+  bk.characters.push({ id: Date.now().toString(), name, role: document.getElementById('char-role').value.trim(), desc: document.getElementById('char-desc').value.trim() });
+  saveLibrary();
+  renderChars();
+  document.getElementById('char-overlay').classList.remove('open');
+}
+
+function removeChar(id) {
+  const bk = currentBook(); if (!bk) return;
+  bk.characters = (bk.characters||[]).filter(c=>c.id!==id);
+  saveLibrary();
+  renderChars();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderBooks();
+renderStats();
+renderChars();
 </script>
 </body>
 </html>
