@@ -6,51 +6,6 @@
 <title>StudyHub — Ma Bibliothèque</title>
 <link rel="stylesheet" href="shared.css">
 <style>
-/* Date / time card */
-.time-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-.time-clock {
-  font-family: 'Clash Display', sans-serif;
-  font-size: 96px;
-  font-weight: 700;
-  letter-spacing: -2px;
-  background: var(--grad-cyan);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.time-date {
-  font-family: 'Clash Display', sans-serif;
-  font-size: 48px;
-  font-weight: 700;
-  letter-spacing: -2px;
-  background: var(--grad-cyan);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  display: inline
-}
-.time-day {
-  font-family: 'Clash Display', sans-serif;
-  font-size: 48px;
-  font-weight: 700;
-  letter-spacing: -2px;
-  background: var(--grad-cyan);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  display: inline
-}
-  
 /* Étoiles */
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
 .star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--dur,3s) infinite ease-in-out var(--delay,0s);}
@@ -251,10 +206,6 @@
       <div class="daily-prog-bar"><div class="daily-prog-fill" id="daily-prog" style="width:0%"></div></div>
       <div style="font-family:Syne,sans-serif;font-size:.68rem;color:var(--text-muted)">Objectif : 500 mots/jour</div>
     </div>
-    <!-- Clock -->
-    <div class="time-card fade-in" style="animation-delay:.1s">
-      <div class="time-clock" id="clock">00:00:00</div>
-    </div>
   </div>
 </div>
 
@@ -304,19 +255,6 @@
 </main>
 
 <script>
-// ── Clock ──────────────────────────────────────────────────────────────────
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
-  document.getElementById('date-full').textContent = `${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
-  document.getElementById('weekday').textContent = DAYS[now.getDay()];
-  document.getElementById('dash-date').textContent = `${DAYS[now.getDay()]} ${now.getDate()} ${MONTHS[now.getMonth()]}`;
-}
-updateClock(); setInterval(updateClock, 1000);
-  
 // ── Étoiles ──────────────────────────────────────────────────────────────────
 (function(){
   const el=document.getElementById('stars');
