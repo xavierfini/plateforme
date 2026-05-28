@@ -100,7 +100,7 @@
   position: fixed;
   inset: 0 0 0 52px;
   z-index: 200;
-  background: #07080f;
+  background: #05060e;
   flex-direction: column;
 }
 #constellation-view.open { display: flex; }
@@ -110,9 +110,9 @@
   align-items: center;
   gap: 12px;
   padding: 10px 20px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  background: rgba(10,11,20,.9);
-  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: rgba(8,9,18,.92);
+  backdrop-filter: blur(10px);
   flex-shrink: 0;
   z-index: 10;
 }
@@ -149,12 +149,12 @@
   gap: 5px;
   font-family: 'Syne', sans-serif;
   font-size: .68rem;
-  color: rgba(255,255,255,.4);
+  color: rgba(255,255,255,.35);
 }
-.cst-legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.cst-legend-line {
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
 }
 
 #cst-canvas-wrap {
@@ -164,182 +164,265 @@
   cursor: grab;
 }
 #cst-canvas-wrap.dragging { cursor: grabbing; }
-#cst-canvas { position: absolute; inset: 0; }
+#cst-canvas { position: absolute; inset: 0; transform-origin: 0 0; }
 
-/* Book node cards on canvas */
-.cst-node {
-  position: absolute;
-  width: 160px;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  transition: filter .2s;
-  user-select: none;
-}
-.cst-node:hover .cst-card { border-color: #f59e0b; box-shadow: 0 0 24px rgba(245,158,11,.25), 0 0 60px rgba(245,158,11,.08); }
-.cst-node:hover .cst-node-glow { opacity: 1; }
-.cst-node.selected .cst-card { border-color: #f59e0b; box-shadow: 0 0 32px rgba(245,158,11,.4), 0 0 80px rgba(245,158,11,.12); }
-
-.cst-node-glow {
-  position: absolute;
-  inset: -20px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(245,158,11,.12) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity .4s;
-  pointer-events: none;
-}
-.cst-card {
-  background: rgba(14,15,28,.92);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 12px;
-  padding: 14px;
-  transition: border-color .2s, box-shadow .3s;
-  position: relative;
-  z-index: 2;
-}
-.cst-card-orb {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-}
-.cst-card-title {
-  font-family: 'Clash Display', 'Syne', sans-serif;
-  font-size: .85rem;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.2;
-  margin-bottom: 4px;
-  word-break: break-word;
-}
-.cst-card-genre {
-  font-family: 'Syne', sans-serif;
-  font-size: .62rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: #f59e0b;
-  margin-bottom: 8px;
-  opacity: .75;
-}
-.cst-card-bar-wrap {
-  height: 3px;
-  background: rgba(255,255,255,.07);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-.cst-card-bar { height: 100%; border-radius: 2px; }
-.cst-card-meta {
-  font-family: 'Syne', sans-serif;
-  font-size: .63rem;
-  color: rgba(255,255,255,.35);
-  display: flex;
-  justify-content: space-between;
-}
-
-/* Connector lines SVG */
+/* SVG lignes */
 #cst-svg {
   position: absolute;
   inset: 0;
   pointer-events: none;
   overflow: visible;
+  transform-origin: 0 0;
 }
 
-/* Detail panel */
+/* ── Nœud générique ── */
+.cn {
+  position: absolute;
+  transform: translate(-50%,-50%);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Nœud LIVRE — grand, hexagonal via clip */
+.cn-book {
+  width: 148px;
+}
+.cn-book-inner {
+  background: rgba(12,13,26,.95);
+  border: 1.5px solid var(--bk-color, #f59e0b);
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 0 0 0 var(--bk-glow,rgba(245,158,11,.0));
+  transition: box-shadow .35s, border-color .25s;
+  position: relative;
+}
+.cn-book:hover .cn-book-inner,
+.cn-book.active .cn-book-inner {
+  box-shadow: 0 0 28px var(--bk-glow,rgba(245,158,11,.3)), 0 0 60px var(--bk-glow2,rgba(245,158,11,.08));
+  border-color: var(--bk-color, #f59e0b);
+}
+.cn-book-icon {
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  display: block;
+}
+.cn-book-title {
+  font-family: 'Clash Display','Syne',sans-serif;
+  font-size: .88rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 3px;
+  word-break: break-word;
+}
+.cn-book-genre {
+  font-family: 'Syne',sans-serif;
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--bk-color,#f59e0b);
+  opacity: .8;
+  margin-bottom: 9px;
+}
+.cn-book-bar { height: 3px; background: rgba(255,255,255,.07); border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
+.cn-book-bar-fill { height: 100%; border-radius: 2px; background: var(--bk-color,#f59e0b); }
+.cn-book-meta {
+  font-family: 'Syne',sans-serif;
+  font-size: .62rem;
+  color: rgba(255,255,255,.3);
+  display: flex;
+  justify-content: space-between;
+}
+/* Pulse ring quand actif */
+@keyframes pulse-ring {
+  0% { transform: translate(-50%,-50%) scale(1); opacity: .5; }
+  100% { transform: translate(-50%,-50%) scale(1.35); opacity: 0; }
+}
+.cn-book-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 18px;
+  border: 1px solid var(--bk-color,#f59e0b);
+  pointer-events: none;
+  opacity: 0;
+}
+.cn-book.active .cn-book-ring { animation: pulse-ring 1.8s ease-out infinite; opacity: .5; }
+
+/* Nœud CHAPITRE — petite pastille */
+.cn-chap {
+  width: 110px;
+}
+.cn-chap-inner {
+  background: rgba(10,12,24,.9);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: 9px 11px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.cn-chap:hover .cn-chap-inner {
+  border-color: var(--bk-color, rgba(255,255,255,.35));
+  box-shadow: 0 0 14px rgba(255,255,255,.07);
+}
+.cn-chap-num {
+  font-family: 'Syne',sans-serif;
+  font-size: .58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--bk-color,#f59e0b);
+  opacity: .7;
+  margin-bottom: 2px;
+}
+.cn-chap-title {
+  font-size: .75rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.8);
+  line-height: 1.2;
+  word-break: break-word;
+}
+.cn-chap-words {
+  font-family: 'Syne',sans-serif;
+  font-size: .6rem;
+  color: rgba(255,255,255,.25);
+  margin-top: 3px;
+}
+
+/* Nœud PERSONNAGE — bulle ronde */
+.cn-char {
+  width: 90px;
+}
+.cn-char-inner {
+  background: rgba(8,10,22,.9);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 50px;
+  padding: 8px 12px;
+  text-align: center;
+  transition: border-color .2s, box-shadow .2s;
+}
+.cn-char:hover .cn-char-inner {
+  border-color: var(--char-color,rgba(103,232,249,.5));
+  box-shadow: 0 0 14px var(--char-glow,rgba(103,232,249,.15));
+}
+.cn-char-name {
+  font-family: 'Syne',sans-serif;
+  font-size: .72rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.75);
+  line-height: 1.2;
+}
+.cn-char-role {
+  font-family: 'Syne',sans-serif;
+  font-size: .58rem;
+  color: var(--char-color,rgba(103,232,249,.6));
+  margin-top: 2px;
+  opacity: .8;
+}
+
+/* Tooltip au survol */
+.cst-tooltip {
+  position: absolute;
+  background: rgba(6,7,16,.97);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-family: 'Syne',sans-serif;
+  font-size: .72rem;
+  color: rgba(255,255,255,.7);
+  pointer-events: none;
+  z-index: 100;
+  max-width: 220px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  display: none;
+}
+
+/* Panneau détail latéral */
 .cst-detail {
   position: absolute;
   right: 20px;
   top: 20px;
-  width: 240px;
-  background: rgba(10,11,20,.95);
-  border: 1px solid rgba(245,158,11,.3);
+  width: 250px;
+  background: rgba(8,9,20,.97);
+  border: 1px solid rgba(255,255,255,.1);
   border-radius: 14px;
   padding: 20px;
   z-index: 50;
-  transform: translateX(280px);
+  transform: translateX(290px);
   transition: transform .35s cubic-bezier(.4,0,.2,1);
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 .cst-detail.open { transform: translateX(0); }
 .cst-detail-close {
-  position: absolute;
-  top: 12px; right: 12px;
+  position: absolute; top: 12px; right: 12px;
   background: none; border: none;
-  color: rgba(255,255,255,.3); cursor: pointer; font-size: 1rem; line-height: 1;
+  color: rgba(255,255,255,.3); cursor: pointer; font-size: 1rem;
   transition: color .2s;
 }
 .cst-detail-close:hover { color: #f59e0b; }
-.cst-detail-orb {
-  width: 44px; height: 44px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem; margin-bottom: 12px;
+.cst-detail-type {
+  font-family: 'Syne',sans-serif; font-size: .62rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 4px;
 }
 .cst-detail-title {
-  font-family: 'Clash Display', 'Syne', sans-serif;
+  font-family: 'Clash Display','Syne',sans-serif;
   font-size: 1.05rem; font-weight: 700; color: #fff;
-  margin-bottom: 2px; line-height: 1.2;
+  margin-bottom: 12px; line-height: 1.2;
 }
-.cst-detail-sub {
-  font-family: 'Syne', sans-serif; font-size: .7rem;
-  color: #f59e0b; margin-bottom: 14px; opacity: .8;
-}
-.cst-detail-synopsis {
-  font-family: 'Syne', sans-serif; font-size: .75rem;
-  color: rgba(255,255,255,.45); line-height: 1.5;
-  margin-bottom: 14px;
-  font-style: italic;
+.cst-detail-body {
+  font-family: 'Syne',sans-serif; font-size: .75rem;
+  color: rgba(255,255,255,.45); line-height: 1.6;
+  margin-bottom: 14px; font-style: italic;
 }
 .cst-detail-stat {
   display: flex; justify-content: space-between;
-  font-family: 'Syne', sans-serif; font-size: .75rem;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  font-family: 'Syne',sans-serif; font-size: .75rem;
+  padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.04);
 }
-.cst-detail-stat:last-of-type { border-bottom: none; }
 .cst-detail-stat .v { color: #67e8f9; font-weight: 700; }
+.cst-detail-section {
+  font-family: 'Syne',sans-serif; font-size: .65rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: rgba(255,255,255,.25); margin: 14px 0 6px;
+}
+.cst-detail-tag {
+  display: inline-block;
+  font-family: 'Syne',sans-serif; font-size: .68rem;
+  padding: 3px 9px; border-radius: 20px;
+  margin: 2px 3px 2px 0;
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.5);
+  border: 1px solid rgba(255,255,255,.08);
+}
 .cst-open-btn {
-  margin-top: 16px;
-  width: 100%;
-  background: rgba(245,158,11,.12);
+  margin-top: 16px; width: 100%;
+  background: rgba(245,158,11,.1);
   border: 1px solid rgba(245,158,11,.3);
-  color: #f59e0b;
-  padding: 9px;
+  color: #f59e0b; padding: 9px;
   border-radius: 8px;
-  font-family: 'Syne', sans-serif;
-  font-size: .78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all .2s;
-  letter-spacing: .06em;
-  text-transform: uppercase;
+  font-family: 'Syne',sans-serif; font-size: .78rem;
+  font-weight: 700; cursor: pointer;
+  transition: all .2s; letter-spacing: .06em; text-transform: uppercase;
 }
-.cst-open-btn:hover { background: rgba(245,158,11,.22); }
+.cst-open-btn:hover { background: rgba(245,158,11,.2); }
 
-/* Hint */
+/* Hint & empty */
 .cst-hint {
-  position: absolute;
-  bottom: 16px; left: 50%;
+  position: absolute; bottom: 14px; left: 50%;
   transform: translateX(-50%);
-  font-family: 'Syne', sans-serif;
-  font-size: .68rem;
-  color: rgba(255,255,255,.2);
-  pointer-events: none;
-  white-space: nowrap;
+  font-family: 'Syne',sans-serif; font-size: .66rem;
+  color: rgba(255,255,255,.18); pointer-events: none; white-space: nowrap;
 }
-
-/* Empty constellation */
 .cst-empty {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 12px; color: rgba(255,255,255,.25);
-  font-family: 'Syne', sans-serif; font-size: .88rem;
+  gap: 12px; color: rgba(255,255,255,.22);
+  font-family: 'Syne',sans-serif; font-size: .88rem;
 }
-.cst-empty .big { font-size: 3rem; opacity: .3; }
+.cst-empty .big { font-size: 3rem; opacity: .25; }
 </style>
 </head>
 <body>
@@ -459,11 +542,12 @@
 <!-- ══ CONSTELLATION VIEW ══════════════════════════════════════════════════════ -->
 <div id="constellation-view">
   <div class="cst-toolbar">
-    <h2>✦ Constellation des histoires</h2>
+    <h2>✦ Toile narrative</h2>
     <div class="cst-legend">
-      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:#f59e0b"></div>Genre similaire</div>
-      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:rgba(103,232,249,.5)"></div>Personnage partagé</div>
-      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:rgba(167,139,250,.5)"></div>Univers lié</div>
+      <div class="cst-legend-item"><div class="cst-legend-line" style="background:#f59e0b;opacity:.7"></div>Livre → Chapitre</div>
+      <div class="cst-legend-item"><div class="cst-legend-line" style="background:#67e8f9;opacity:.6"></div>Livre → Personnage</div>
+      <div class="cst-legend-item"><div class="cst-legend-line" style="background:#a78bfa;opacity:.7;border-top:2px dashed #a78bfa;height:0"></div>Personnage dans ce chapitre</div>
+      <div class="cst-legend-item"><div class="cst-legend-line" style="background:#f472b6;opacity:.6"></div>Personnage partagé entre livres</div>
     </div>
     <button class="cst-close" onclick="closeConstellation()">✕ Fermer</button>
   </div>
@@ -473,23 +557,24 @@
     <div id="cst-canvas"></div>
     <div class="cst-empty" id="cst-empty" style="display:none">
       <div class="big">✦</div>
-      <p>Aucun livre dans ta bibliothèque.<br>Crée ton premier livre pour voir la constellation.</p>
+      <p>Aucun livre dans ta bibliothèque.<br>Crée ton premier livre pour voir la toile narrative.</p>
     </div>
-    <div class="cst-hint" id="cst-hint">Glisse pour naviguer · Scroll pour zoomer · Clique sur un livre pour le détailler</div>
+    <div class="cst-tooltip" id="cst-tooltip"></div>
+    <div class="cst-hint" id="cst-hint">Glisse pour naviguer · Scroll pour zoomer · Clique sur un nœud pour le détailler · Déplace les nœuds librement</div>
   </div>
 
   <!-- Detail panel -->
   <div class="cst-detail" id="cst-detail">
     <button class="cst-detail-close" onclick="closeDetail()">✕</button>
-    <div class="cst-detail-orb" id="cd-orb"></div>
+    <div class="cst-detail-type" id="cd-type" style="color:#f59e0b">—</div>
     <div class="cst-detail-title" id="cd-title">—</div>
-    <div class="cst-detail-sub" id="cd-sub">—</div>
-    <div class="cst-detail-synopsis" id="cd-synopsis"></div>
-    <div class="cst-detail-stat"><span>Chapitres</span><span class="v" id="cd-chaps">0</span></div>
-    <div class="cst-detail-stat"><span>Mots écrits</span><span class="v" id="cd-words">0</span></div>
-    <div class="cst-detail-stat"><span>Progression</span><span class="v" id="cd-pct">0%</span></div>
-    <div class="cst-detail-stat"><span>Objectif</span><span class="v" id="cd-goal">50 000</span></div>
-    <button class="cst-open-btn" id="cd-open-btn">→ Ouvrir le livre</button>
+    <div class="cst-detail-body" id="cd-body"></div>
+    <div id="cd-stats"></div>
+    <div id="cd-links-section" style="display:none">
+      <div class="cst-detail-section">Liens narratifs</div>
+      <div id="cd-links"></div>
+    </div>
+    <button class="cst-open-btn" id="cd-open-btn" style="display:none">→ Ouvrir ce livre</button>
   </div>
 </div>
 
@@ -867,348 +952,477 @@ function removeChar(id) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ── CONSTELLATION ─────────────────────────────────────────────────────────────
+// ── TOILE NARRATIVE ───────────────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Palette d'orbes par index
-const CST_PALETTE = [
-  { bg: 'rgba(245,158,11,.18)', border: '#f59e0b', glow: 'rgba(245,158,11,.35)', bar: 'linear-gradient(90deg,#f59e0b,#fcd34d)', emoji: '✦' },
-  { bg: 'rgba(103,232,249,.14)', border: '#67e8f9', glow: 'rgba(103,232,249,.3)', bar: 'linear-gradient(90deg,#67e8f9,#a5f3fc)', emoji: '◈' },
-  { bg: 'rgba(167,139,250,.16)', border: '#a78bfa', glow: 'rgba(167,139,250,.3)', bar: 'linear-gradient(90deg,#a78bfa,#c4b5fd)', emoji: '◆' },
-  { bg: 'rgba(249,168,212,.14)', border: '#f9a8d4', glow: 'rgba(249,168,212,.3)', bar: 'linear-gradient(90deg,#f9a8d4,#fbcfe8)', emoji: '❋' },
-  { bg: 'rgba(134,239,172,.14)', border: '#86efac', glow: 'rgba(134,239,172,.3)', bar: 'linear-gradient(90deg,#86efac,#bbf7d0)', emoji: '✿' },
-  { bg: 'rgba(253,186,116,.14)', border: '#fbb060', glow: 'rgba(253,186,116,.3)', bar: 'linear-gradient(90deg,#fbb060,#fde68a)', emoji: '⬡' },
+// Couleurs par livre (index)
+const BK_COLORS = [
+  { c: '#f59e0b', g: 'rgba(245,158,11,.25)', g2: 'rgba(245,158,11,.07)' },
+  { c: '#67e8f9', g: 'rgba(103,232,249,.22)', g2: 'rgba(103,232,249,.06)' },
+  { c: '#a78bfa', g: 'rgba(167,139,250,.22)', g2: 'rgba(167,139,250,.06)' },
+  { c: '#86efac', g: 'rgba(134,239,172,.22)', g2: 'rgba(134,239,172,.06)' },
+  { c: '#f9a8d4', g: 'rgba(249,168,212,.22)', g2: 'rgba(249,168,212,.06)' },
+  { c: '#fbbf24', g: 'rgba(251,191,36,.22)',  g2: 'rgba(251,191,36,.06)'  },
 ];
 
-// Positions sur le canvas (sauvegardées)
-let cstPositions = {};
+// Couleurs personnages (fixes, indépendantes du livre)
+const CHAR_COLORS = ['#67e8f9','#a5f3fc','#93c5fd','#c4b5fd','#6ee7b7','#fdba74'];
+
+// Registre des positions de TOUS les nœuds (livre, chapitre, personnage)
+let cstPos = {};         // nodeId → {x, y}
 let cstTransform = { x: 0, y: 0, scale: 1 };
-let cstDrag = { active: false, sx: 0, sy: 0, ox: 0, oy: 0 };
-let cstSelectedId = null;
+let cstPan = { active: false, sx: 0, sy: 0, ox: 0, oy: 0 };
+let cstBgCanvas = null;
 
-// Étoiles de fond propres à la constellation
-let cstBgStars = null;
-
-function genCstStars(wrap) {
-  if (cstBgStars) return;
-  cstBgStars = document.createElement('canvas');
-  cstBgStars.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:0;';
-  cstBgStars.width = window.innerWidth;
-  cstBgStars.height = window.innerHeight;
-  const ctx = cstBgStars.getContext('2d');
-  for (let i = 0; i < 220; i++) {
-    const x = Math.random() * cstBgStars.width;
-    const y = Math.random() * cstBgStars.height;
-    const r = Math.random() * 1.2 + .2;
-    const a = Math.random() * .5 + .05;
+// ── Fond étoilé ──
+function genCstBg(wrap) {
+  if (cstBgCanvas) return;
+  cstBgCanvas = document.createElement('canvas');
+  cstBgCanvas.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:0;';
+  cstBgCanvas.width = window.innerWidth * 1.5;
+  cstBgCanvas.height = window.innerHeight * 1.5;
+  const ctx = cstBgCanvas.getContext('2d');
+  for (let i = 0; i < 300; i++) {
+    const x = Math.random() * cstBgCanvas.width;
+    const y = Math.random() * cstBgCanvas.height;
+    const r = Math.random() * 1.4 + .15;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * .45 + .04})`;
     ctx.fill();
   }
-  wrap.insertBefore(cstBgStars, wrap.firstChild);
+  wrap.insertBefore(cstBgCanvas, wrap.firstChild);
 }
 
+// ── Ouvrir / fermer ──
 function openConstellation() {
-  const view = document.getElementById('constellation-view');
-  view.classList.add('open');
+  document.getElementById('constellation-view').classList.add('open');
   document.body.style.overflow = 'hidden';
-  const wrap = document.getElementById('cst-canvas-wrap');
-  genCstStars(wrap);
-  renderConstellation();
-  setupCstDrag();
+  genCstBg(document.getElementById('cst-canvas-wrap'));
+  cstTransform = { x: 0, y: 0, scale: 1 };
+  cstPos = {};
+  buildNarrativeWeb();
+  setupCstInteraction();
 }
-
 function closeConstellation() {
   document.getElementById('constellation-view').classList.remove('open');
   document.body.style.overflow = '';
   closeDetail();
 }
 
-// Calcule les positions en cercle ou grille selon le nb de livres
-function getDefaultPositions(books) {
-  const W = window.innerWidth - 52;
-  const H = window.innerHeight - 52;
-  const cx = W / 2, cy = H / 2;
-  const n = books.length;
-  if (n === 0) return {};
-  const positions = {};
-  if (n === 1) {
-    positions[books[0].id] = { x: cx, y: cy };
-  } else if (n <= 6) {
-    const r = Math.min(W, H) * 0.28;
-    books.forEach((b, i) => {
-      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-      positions[b.id] = { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r };
-    });
-  } else {
-    // Grille organique
-    const cols = Math.ceil(Math.sqrt(n));
-    const gapX = Math.min(220, (W - 120) / cols);
-    const gapY = Math.min(240, (H - 120) / Math.ceil(n / cols));
-    const startX = cx - (cols - 1) * gapX / 2;
-    const startY = cy - (Math.ceil(n / cols) - 1) * gapY / 2;
-    books.forEach((b, i) => {
-      const col = i % cols, row = Math.floor(i / cols);
-      const jitter = (row % 2) * gapX * 0.2;
-      positions[b.id] = { x: startX + col * gapX + jitter, y: startY + row * gapY };
-    });
-  }
-  return positions;
-}
-
-// Détecte les connexions entre livres
-function getConnections(books) {
-  const connections = [];
-  for (let i = 0; i < books.length; i++) {
-    for (let j = i + 1; j < books.length; j++) {
-      const a = books[i], b = books[j];
-      // Genre similaire
-      if (a.genre && b.genre) {
-        const ga = a.genre.toLowerCase().split(/[\s,\/]+/);
-        const gb = b.genre.toLowerCase().split(/[\s,\/]+/);
-        const shared = ga.filter(g => gb.includes(g) && g.length > 2);
-        if (shared.length) { connections.push({ a: a.id, b: b.id, type: 'genre', label: shared[0] }); continue; }
-      }
-      // Personnage partagé
-      const charsA = (a.characters||[]).map(c=>c.name.toLowerCase().trim());
-      const charsB = (b.characters||[]).map(c=>c.name.toLowerCase().trim());
-      const sharedChar = charsA.find(c => charsB.includes(c) && c.length > 1);
-      if (sharedChar) { connections.push({ a: a.id, b: b.id, type: 'character', label: sharedChar }); continue; }
-      // Même univers (mot-clé dans le titre ou synopsis)
-      const wordsA = ((a.title||'')+' '+(a.synopsis||'')).toLowerCase().split(/\s+/);
-      const wordsB = ((b.title||'')+' '+(b.synopsis||'')).toLowerCase().split(/\s+/);
-      const stopWords = new Set(['de','du','des','le','la','les','un','une','et','en','au','aux','sur','dans','par','pour','est','il','elle','the','of','and','a','in','to','is']);
-      const sharedWord = wordsA.find(w => w.length > 4 && !stopWords.has(w) && wordsB.includes(w));
-      if (sharedWord) { connections.push({ a: a.id, b: b.id, type: 'universe', label: sharedWord }); }
-    }
-  }
-  return connections;
-}
-
-function renderConstellation() {
-  const books = library.books;
+// ── Construction de la toile ──────────────────────────────────────────────────
+function buildNarrativeWeb() {
   const canvas = document.getElementById('cst-canvas');
-  const svg = document.getElementById('cst-svg');
-  const empty = document.getElementById('cst-empty');
-  const hint = document.getElementById('cst-hint');
-
+  const svg    = document.getElementById('cst-svg');
+  const empty  = document.getElementById('cst-empty');
   canvas.innerHTML = '';
   svg.innerHTML = '';
 
-  if (!books.length) {
-    empty.style.display = 'flex';
-    hint.style.display = 'none';
-    return;
-  }
+  const books = library.books;
+  if (!books.length) { empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
-  hint.style.display = 'block';
 
-  // Initialiser positions manquantes
-  const defaults = getDefaultPositions(books);
-  books.forEach(b => {
-    if (!cstPositions[b.id]) cstPositions[b.id] = defaults[b.id] || { x: 400, y: 300 };
-  });
+  const W = window.innerWidth - 52;
+  const H = window.innerHeight - 52;
 
-  // Connexions SVG
-  const connections = getConnections(books);
-  const connColors = { genre: '#f59e0b', character: 'rgba(103,232,249,.6)', universe: 'rgba(167,139,250,.5)' };
-  connections.forEach(conn => {
-    const posA = cstPositions[conn.a], posB = cstPositions[conn.b];
-    if (!posA || !posB) return;
-    const mx = (posA.x + posB.x) / 2, my = (posA.y + posB.y) / 2;
-    // Courbe de Bézier légèrement arquée
-    const dx = posB.x - posA.x, dy = posB.y - posA.y;
-    const nx = -dy * 0.15, ny = dx * 0.15;
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M${posA.x},${posA.y} Q${mx+nx},${my+ny} ${posB.x},${posB.y}`);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', connColors[conn.type] || 'rgba(255,255,255,.15)');
-    path.setAttribute('stroke-width', '1');
-    path.setAttribute('stroke-dasharray', '4 6');
-    path.setAttribute('opacity', '0.55');
-    svg.appendChild(path);
-    // Petit label au milieu
-    if (conn.label) {
-      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      txt.setAttribute('x', mx + nx * 0.5);
-      txt.setAttribute('y', my + ny * 0.5 - 4);
-      txt.setAttribute('text-anchor', 'middle');
-      txt.setAttribute('font-family', 'Syne, sans-serif');
-      txt.setAttribute('font-size', '9');
-      txt.setAttribute('fill', connColors[conn.type] || 'rgba(255,255,255,.3)');
-      txt.setAttribute('opacity', '0.6');
-      txt.textContent = conn.label;
-      svg.appendChild(txt);
-    }
-  });
+  // ── Calcule les positions initiales en clusters ──
+  // Chaque livre est un cluster : nœud central + satellites chapitres + satellites persos
+  const BOOK_RADIUS_CHAP  = 200; // distance livre → chapitre
+  const BOOK_RADIUS_CHAR  = 160; // distance livre → personnage
+  // Écartement entre clusters de livres
+  const clusterSpacing = 500;
+  const cols = Math.ceil(Math.sqrt(books.length));
 
-  // Nœuds livres
-  books.forEach((b, i) => {
-    const pos = cstPositions[b.id];
-    const pal = CST_PALETTE[i % CST_PALETTE.length];
-    const tw = totalWords(b);
-    const pct = Math.min(100, Math.round(tw / (b.goal || 50000) * 100));
+  books.forEach((bk, bi) => {
+    const bkColor = BK_COLORS[bi % BK_COLORS.length];
+    const col = bi % cols, row = Math.floor(bi / cols);
+    const jitter = (row % 2) * clusterSpacing * 0.3;
+    const bx = 300 + col * clusterSpacing + jitter;
+    const by = 320 + row * clusterSpacing;
 
-    const node = document.createElement('div');
-    node.className = 'cst-node' + (cstSelectedId === b.id ? ' selected' : '');
-    node.style.left = pos.x + 'px';
-    node.style.top = pos.y + 'px';
-    node.dataset.id = b.id;
+    // Position du livre
+    if (!cstPos[bk.id]) cstPos[bk.id] = { x: bx, y: by };
 
-    node.innerHTML = `
-      <div class="cst-node-glow" style="background:radial-gradient(circle,${pal.glow} 0%,transparent 70%)"></div>
-      <div class="cst-card" style="border-color:${b.id===cstSelectedId?pal.border:'rgba(255,255,255,.1)'}">
-        <div class="cst-card-orb" style="background:${pal.bg};border:1px solid ${pal.border}40">${pal.emoji}</div>
-        <div class="cst-card-title">${b.title}</div>
-        ${b.genre ? `<div class="cst-card-genre">${b.genre}</div>` : ''}
-        <div class="cst-card-bar-wrap">
-          <div class="cst-card-bar" style="width:${pct}%;background:${pal.bar}"></div>
-        </div>
-        <div class="cst-card-meta">
-          <span>${(b.chapters||[]).length} chap.</span>
-          <span>${pct}%</span>
-        </div>
-      </div>`;
-
-    // Drag du nœud
-    let nodeDragActive = false, nsx, nsy, nox, noy;
-    node.addEventListener('mousedown', e => {
-      if (e.button !== 0) return;
-      e.stopPropagation();
-      nodeDragActive = false;
-      nsx = e.clientX; nsy = e.clientY;
-      nox = pos.x; noy = pos.y;
-      function onMove(ev) {
-        const dx = (ev.clientX - nsx) / cstTransform.scale;
-        const dy = (ev.clientY - nsy) / cstTransform.scale;
-        if (!nodeDragActive && Math.abs(dx) + Math.abs(dy) > 5) nodeDragActive = true;
-        if (!nodeDragActive) return;
-        pos.x = nox + dx; pos.y = noy + dy;
-        cstPositions[b.id] = pos;
-        node.style.left = pos.x + 'px'; node.style.top = pos.y + 'px';
-        renderCstLines();
+    // Positions des chapitres en arc supérieur
+    const chaps = bk.chapters || [];
+    chaps.forEach((ch, ci) => {
+      const nid = `chap_${ch.id}`;
+      if (!cstPos[nid]) {
+        const total = chaps.length;
+        const arcStart = -Math.PI * 0.9, arcEnd = -Math.PI * 0.1;
+        const angle = total > 1
+          ? arcStart + (arcEnd - arcStart) * ci / (total - 1)
+          : -Math.PI / 2;
+        cstPos[nid] = {
+          x: bx + Math.cos(angle) * BOOK_RADIUS_CHAP,
+          y: by + Math.sin(angle) * BOOK_RADIUS_CHAP
+        };
       }
-      function onUp() {
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onUp);
-        if (!nodeDragActive) selectBook(b.id, pal, i);
-      }
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
     });
 
-    canvas.appendChild(node);
+    // Positions des personnages en arc inférieur
+    const chars = bk.characters || [];
+    chars.forEach((ch, ci) => {
+      const nid = `char_${bk.id}_${ch.id}`;
+      if (!cstPos[nid]) {
+        const total = chars.length;
+        const arcStart = Math.PI * 0.1, arcEnd = Math.PI * 0.9;
+        const angle = total > 1
+          ? arcStart + (arcEnd - arcStart) * ci / (total - 1)
+          : Math.PI / 2;
+        cstPos[nid] = {
+          x: bx + Math.cos(angle) * BOOK_RADIUS_CHAR,
+          y: by + Math.sin(angle) * BOOK_RADIUS_CHAR
+        };
+      }
+    });
+  });
+
+  // ── Dessine les arêtes SVG ──
+  drawAllEdges(books);
+
+  // ── Crée les nœuds DOM ──
+  books.forEach((bk, bi) => {
+    const bkColor = BK_COLORS[bi % BK_COLORS.length];
+    const tw = totalWords(bk);
+    const pct = Math.min(100, Math.round(tw / (bk.goal || 50000) * 100));
+
+    // Nœud livre
+    const bkNode = makeNode('cn-book', bk.id);
+    bkNode.style.setProperty('--bk-color', bkColor.c);
+    bkNode.style.setProperty('--bk-glow', bkColor.g);
+    bkNode.style.setProperty('--bk-glow2', bkColor.g2);
+    bkNode.innerHTML = `
+      <div class="cn-book-ring"></div>
+      <div class="cn-book-inner">
+        <span class="cn-book-icon">📖</span>
+        <div class="cn-book-title">${bk.title}</div>
+        ${bk.genre ? `<div class="cn-book-genre">${bk.genre}</div>` : ''}
+        <div class="cn-book-bar"><div class="cn-book-bar-fill" style="width:${pct}%"></div></div>
+        <div class="cn-book-meta"><span>${(bk.chapters||[]).length} chap.</span><span>${pct}%</span></div>
+      </div>`;
+    bkNode.addEventListener('mousedown', makeDragHandler(bk.id, bkNode, () => onClickBook(bk, bi)));
+    canvas.appendChild(bkNode);
+    positionNode(bkNode, bk.id);
+
+    // Nœuds chapitres
+    (bk.chapters||[]).forEach((ch, ci) => {
+      const nid = `chap_${ch.id}`;
+      const chNode = makeNode('cn-chap', nid);
+      chNode.style.setProperty('--bk-color', bkColor.c);
+      const wc = cw(ch.text||'');
+      chNode.innerHTML = `
+        <div class="cn-chap-inner">
+          <div class="cn-chap-num">Ch. ${ci+1}</div>
+          <div class="cn-chap-title">${ch.title || 'Sans titre'}</div>
+          <div class="cn-chap-words">${wc.toLocaleString('fr-FR')} mots</div>
+        </div>`;
+      chNode.addEventListener('mousedown', makeDragHandler(nid, chNode, () => onClickChap(ch, bk, ci, bkColor.c)));
+      canvas.appendChild(chNode);
+      positionNode(chNode, nid);
+    });
+
+    // Nœuds personnages
+    (bk.characters||[]).forEach((ch, ci) => {
+      const nid = `char_${bk.id}_${ch.id}`;
+      const charC = CHAR_COLORS[ci % CHAR_COLORS.length];
+      const chNode = makeNode('cn-char', nid);
+      chNode.style.setProperty('--char-color', charC);
+      chNode.style.setProperty('--char-glow', charC + '40');
+      chNode.innerHTML = `
+        <div class="cn-char-inner">
+          <div class="cn-char-name">${ch.name}</div>
+          ${ch.role ? `<div class="cn-char-role">${ch.role}</div>` : ''}
+        </div>`;
+      chNode.addEventListener('mousedown', makeDragHandler(nid, chNode, () => onClickChar(ch, bk, ci, charC)));
+      canvas.appendChild(chNode);
+      positionNode(chNode, nid);
+    });
   });
 
   applyTransform();
 }
 
-function renderCstLines() {
+// ── Dessine toutes les arêtes SVG ──
+function drawAllEdges(books) {
   const svg = document.getElementById('cst-svg');
   svg.innerHTML = '';
-  const books = library.books;
-  const connections = getConnections(books);
-  const connColors = { genre: '#f59e0b', character: 'rgba(103,232,249,.6)', universe: 'rgba(167,139,250,.5)' };
-  connections.forEach(conn => {
-    const posA = cstPositions[conn.a], posB = cstPositions[conn.b];
-    if (!posA || !posB) return;
-    const mx = (posA.x + posB.x) / 2, my = (posA.y + posB.y) / 2;
-    const dx = posB.x - posA.x, dy = posB.y - posA.y;
-    const nx = -dy * 0.15, ny = dx * 0.15;
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M${posA.x},${posA.y} Q${mx+nx},${my+ny} ${posB.x},${posB.y}`);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', connColors[conn.type] || 'rgba(255,255,255,.15)');
-    path.setAttribute('stroke-width', '1');
-    path.setAttribute('stroke-dasharray', '4 6');
-    path.setAttribute('opacity', '0.55');
-    svg.appendChild(path);
-    if (conn.label) {
-      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      txt.setAttribute('x', mx + nx * 0.5);
-      txt.setAttribute('y', my + ny * 0.5 - 4);
-      txt.setAttribute('text-anchor', 'middle');
-      txt.setAttribute('font-family', 'Syne, sans-serif');
-      txt.setAttribute('font-size', '9');
-      txt.setAttribute('fill', connColors[conn.type] || 'rgba(255,255,255,.3)');
-      txt.setAttribute('opacity', '0.6');
-      txt.textContent = conn.label;
-      svg.appendChild(txt);
+
+  books.forEach((bk, bi) => {
+    const bkColor = BK_COLORS[bi % BK_COLORS.length];
+    const bkPos = cstPos[bk.id];
+    if (!bkPos) return;
+
+    // Livre → Chapitres (lignes continues, couleur du livre)
+    (bk.chapters||[]).forEach(ch => {
+      const p = cstPos[`chap_${ch.id}`]; if (!p) return;
+      svgLine(svg, bkPos, p, bkColor.c, 1.2, 'none', 0.5);
+    });
+
+    // Livre → Personnages (lignes continues, cyan-ish)
+    (bk.characters||[]).forEach((ch, ci) => {
+      const p = cstPos[`char_${bk.id}_${ch.id}`]; if (!p) return;
+      const charC = CHAR_COLORS[ci % CHAR_COLORS.length];
+      svgLine(svg, bkPos, p, charC, 1, 'none', 0.4);
+    });
+
+    // Personnage → Chapitres où son nom apparaît dans les notes
+    (bk.characters||[]).forEach((ch, ci) => {
+      const charPos = cstPos[`char_${bk.id}_${ch.id}`]; if (!charPos) return;
+      (bk.chapters||[]).forEach(cap => {
+        const txt = ((cap.notes||'') + ' ' + (cap.text||'')).toLowerCase();
+        if (txt.includes(ch.name.toLowerCase())) {
+          const capPos = cstPos[`chap_${cap.id}`]; if (!capPos) return;
+          svgLine(svg, charPos, capPos, '#a78bfa', 0.8, '3 4', 0.45);
+        }
+      });
+    });
+  });
+
+  // Liens entre livres : personnages partagés (nom identique)
+  for (let i = 0; i < books.length; i++) {
+    for (let j = i + 1; j < books.length; j++) {
+      const a = books[i], b = books[j];
+      const charsA = (a.characters||[]).map(c => c.name.toLowerCase().trim());
+      (b.characters||[]).forEach(ch => {
+        if (charsA.includes(ch.name.toLowerCase().trim())) {
+          const pA = cstPos[a.id], pB = cstPos[b.id];
+          if (pA && pB) {
+            svgCurve(svg, pA, pB, '#f472b6', 1.2, '2 5', 0.5, ch.name);
+          }
+        }
+      });
     }
+  }
+}
+
+function svgLine(svg, a, b, color, sw, dash, opacity) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  el.setAttribute('x1', a.x); el.setAttribute('y1', a.y);
+  el.setAttribute('x2', b.x); el.setAttribute('y2', b.y);
+  el.setAttribute('stroke', color);
+  el.setAttribute('stroke-width', sw);
+  if (dash !== 'none') el.setAttribute('stroke-dasharray', dash);
+  el.setAttribute('opacity', opacity);
+  el.setAttribute('fill', 'none');
+  svg.appendChild(el);
+}
+
+function svgCurve(svg, a, b, color, sw, dash, opacity, label) {
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const nx = -dy * 0.2, ny = dx * 0.2;
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', `M${a.x},${a.y} Q${mx+nx},${my+ny} ${b.x},${b.y}`);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', color);
+  path.setAttribute('stroke-width', sw);
+  if (dash !== 'none') path.setAttribute('stroke-dasharray', dash);
+  path.setAttribute('opacity', opacity);
+  svg.appendChild(path);
+  if (label) {
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txt.setAttribute('x', mx + nx * 0.5);
+    txt.setAttribute('y', my + ny * 0.5 - 5);
+    txt.setAttribute('text-anchor', 'middle');
+    txt.setAttribute('font-family', 'Syne,sans-serif');
+    txt.setAttribute('font-size', '9');
+    txt.setAttribute('fill', color);
+    txt.setAttribute('opacity', '0.7');
+    txt.textContent = label;
+    svg.appendChild(txt);
+  }
+}
+
+// ── Utilitaires nœuds DOM ──
+function makeNode(cls, nid) {
+  const el = document.createElement('div');
+  el.className = 'cn ' + cls;
+  el.dataset.nid = nid;
+  return el;
+}
+function positionNode(el, nid) {
+  const p = cstPos[nid];
+  if (p) { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; }
+}
+
+// ── Drag d'un nœud individuel ──
+function makeDragHandler(nid, el, onClick) {
+  return function(e) {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    let moved = false;
+    const sx = e.clientX, sy = e.clientY;
+    const op = { ...cstPos[nid] };
+    function onMove(ev) {
+      const dx = (ev.clientX - sx) / cstTransform.scale;
+      const dy = (ev.clientY - sy) / cstTransform.scale;
+      if (!moved && Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+      if (!moved) return;
+      cstPos[nid] = { x: op.x + dx, y: op.y + dy };
+      el.style.left = cstPos[nid].x + 'px';
+      el.style.top  = cstPos[nid].y + 'px';
+      drawAllEdges(library.books);
+    }
+    function onUp() {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      if (!moved) onClick();
+    }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+}
+
+// ── Clics sur les nœuds → panneau détail ──
+function onClickBook(bk, bi) {
+  const color = BK_COLORS[bi % BK_COLORS.length].c;
+  const tw = totalWords(bk);
+  const pct = Math.min(100, Math.round(tw / (bk.goal || 50000) * 100));
+  // Highlight
+  document.querySelectorAll('.cn-book').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.cn-book[data-nid="${bk.id}"]`)?.classList.add('active');
+
+  showDetail({
+    type: '📖 Livre',
+    typeColor: color,
+    title: bk.title + (bk.subtitle ? ` — ${bk.subtitle}` : ''),
+    body: bk.synopsis || 'Aucun synopsis renseigné.',
+    stats: [
+      ['Genre', bk.genre || '—'],
+      ['Chapitres', (bk.chapters||[]).length],
+      ['Mots écrits', tw.toLocaleString('fr-FR')],
+      ['Progression', pct + '%'],
+      ['Objectif', (bk.goal||50000).toLocaleString('fr-FR') + ' mots'],
+    ],
+    links: (bk.characters||[]).map(c => ({ label: c.name, sub: c.role })),
+    linksTitle: 'Personnages',
+    openLabel: '→ Écrire ce livre',
+    openFn: () => { closeConstellation(); openBook(bk.id); }
   });
 }
 
-// Sélection d'un livre → panneau détail
-function selectBook(id, pal, idx) {
-  cstSelectedId = id;
-  const bk = library.books.find(b => b.id === id); if (!bk) return;
-  const tw = totalWords(bk);
-  const pct = Math.min(100, Math.round(tw / (bk.goal || 50000) * 100));
-
-  // Mettre à jour surbrillance des nodes
-  document.querySelectorAll('.cst-node').forEach(n => {
-    const isSelected = n.dataset.id === id;
-    n.classList.toggle('selected', isSelected);
-    n.querySelector('.cst-card').style.borderColor = isSelected ? (pal ? pal.border : '#f59e0b') : 'rgba(255,255,255,.1)';
+function onClickChap(ch, bk, ci, color) {
+  const wc = cw(ch.text||'');
+  // Quels personnages sont dans ce chapitre ?
+  const mentioned = (bk.characters||[]).filter(c => {
+    const txt = ((ch.notes||'') + ' ' + (ch.text||'')).toLowerCase();
+    return txt.includes(c.name.toLowerCase());
   });
+  showDetail({
+    type: `📄 Chapitre ${ci+1} · ${bk.title}`,
+    typeColor: color,
+    title: ch.title || 'Sans titre',
+    body: ch.notes || 'Aucune note pour ce chapitre.',
+    stats: [
+      ['Mots', wc.toLocaleString('fr-FR')],
+      ['Lecture', Math.max(1, Math.ceil(wc / 200)) + ' min'],
+    ],
+    links: mentioned.map(c => ({ label: c.name, sub: c.role })),
+    linksTitle: 'Personnages présents',
+    openLabel: '→ Écrire ce chapitre',
+    openFn: () => { closeConstellation(); openBook(bk.id); setTimeout(() => loadChapter(ch.id), 80); }
+  });
+}
 
-  // Panneau détail
-  const p = pal || CST_PALETTE[idx % CST_PALETTE.length];
-  document.getElementById('cd-orb').style.cssText = `background:${p.bg};border:1px solid ${p.border}60;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem`;
-  document.getElementById('cd-orb').textContent = p.emoji;
-  document.getElementById('cd-title').textContent = bk.title;
-  document.getElementById('cd-sub').textContent = [bk.subtitle, bk.genre].filter(Boolean).join(' · ') || (bk.genre || '—');
-  document.getElementById('cd-synopsis').textContent = bk.synopsis || 'Aucun synopsis renseigné.';
-  document.getElementById('cd-chaps').textContent = (bk.chapters||[]).length;
-  document.getElementById('cd-words').textContent = tw.toLocaleString('fr-FR');
-  document.getElementById('cd-pct').textContent = pct + '%';
-  document.getElementById('cd-goal').textContent = (bk.goal||50000).toLocaleString('fr-FR');
-  document.getElementById('cd-open-btn').onclick = () => { closeConstellation(); openBook(id); };
+function onClickChar(ch, bk, ci, color) {
+  // Dans quels chapitres ce personnage apparaît-il ?
+  const appearsIn = (bk.chapters||[]).filter(cap => {
+    const txt = ((cap.notes||'') + ' ' + (cap.text||'')).toLowerCase();
+    return txt.includes(ch.name.toLowerCase());
+  });
+  // Ce personnage existe-t-il dans d'autres livres ?
+  const sharedBooks = library.books.filter(b => b.id !== bk.id && (b.characters||[]).some(c => c.name.toLowerCase() === ch.name.toLowerCase()));
+
+  showDetail({
+    type: '👤 Personnage · ' + bk.title,
+    typeColor: color,
+    title: ch.name,
+    body: ch.desc || (ch.role ? `Rôle : ${ch.role}` : 'Aucune description.'),
+    stats: [
+      ['Rôle', ch.role || '—'],
+      ['Apparaît dans', appearsIn.length + ' chapitre(s)'],
+      ['Livres partagés', sharedBooks.length || 'Aucun'],
+    ],
+    links: [
+      ...appearsIn.map(c => ({ label: c.title || 'Sans titre', sub: 'chapitre' })),
+      ...sharedBooks.map(b => ({ label: b.title, sub: 'autre livre' }))
+    ],
+    linksTitle: 'Présences narratives',
+    openLabel: null
+  });
+}
+
+function showDetail({ type, typeColor, title, body, stats, links, linksTitle, openLabel, openFn }) {
+  document.getElementById('cd-type').textContent = type;
+  document.getElementById('cd-type').style.color = typeColor || '#f59e0b';
+  document.getElementById('cd-title').textContent = title;
+  document.getElementById('cd-body').textContent = body;
+
+  const statsEl = document.getElementById('cd-stats');
+  statsEl.innerHTML = stats.map(([k,v]) =>
+    `<div class="cst-detail-stat"><span>${k}</span><span class="v">${v}</span></div>`
+  ).join('');
+
+  const linksSection = document.getElementById('cd-links-section');
+  const linksEl = document.getElementById('cd-links');
+  if (links && links.length) {
+    linksSection.style.display = 'block';
+    document.querySelector('#cd-links-section .cst-detail-section').textContent = linksTitle || 'Liens';
+    linksEl.innerHTML = links.map(l =>
+      `<span class="cst-detail-tag" title="${l.sub||''}">${l.label}</span>`
+    ).join('');
+  } else {
+    linksSection.style.display = 'none';
+  }
+
+  const btn = document.getElementById('cd-open-btn');
+  if (openLabel && openFn) {
+    btn.style.display = 'block';
+    btn.textContent = openLabel;
+    btn.onclick = openFn;
+  } else {
+    btn.style.display = 'none';
+  }
+
   document.getElementById('cst-detail').classList.add('open');
 }
 
 function closeDetail() {
-  cstSelectedId = null;
   document.getElementById('cst-detail').classList.remove('open');
-  document.querySelectorAll('.cst-node').forEach(n => {
-    n.classList.remove('selected');
-    n.querySelector('.cst-card').style.borderColor = 'rgba(255,255,255,.1)';
-  });
+  document.querySelectorAll('.cn-book').forEach(n => n.classList.remove('active'));
 }
 
-// Pan du canvas
-function setupCstDrag() {
+// ── Pan + Zoom ──
+function setupCstInteraction() {
   const wrap = document.getElementById('cst-canvas-wrap');
-  // eviter double-binding
   wrap.onmousedown = e => {
-    if (e.target.closest('.cst-node') || e.target.closest('.cst-detail')) return;
-    cstDrag.active = true;
-    cstDrag.sx = e.clientX; cstDrag.sy = e.clientY;
-    cstDrag.ox = cstTransform.x; cstDrag.oy = cstTransform.y;
+    if (e.target.closest('.cn') || e.target.closest('.cst-detail')) return;
+    cstPan.active = true;
+    cstPan.sx = e.clientX; cstPan.sy = e.clientY;
+    cstPan.ox = cstTransform.x; cstPan.oy = cstTransform.y;
     wrap.classList.add('dragging');
   };
   window.onmousemove = e => {
-    if (!cstDrag.active) return;
-    cstTransform.x = cstDrag.ox + (e.clientX - cstDrag.sx);
-    cstTransform.y = cstDrag.oy + (e.clientY - cstDrag.sy);
+    if (!cstPan.active) return;
+    cstTransform.x = cstPan.ox + (e.clientX - cstPan.sx);
+    cstTransform.y = cstPan.oy + (e.clientY - cstPan.sy);
     applyTransform();
   };
   window.onmouseup = () => {
-    if (!cstDrag.active) return;
-    cstDrag.active = false;
+    if (!cstPan.active) return;
+    cstPan.active = false;
     document.getElementById('cst-canvas-wrap').classList.remove('dragging');
   };
   wrap.onwheel = e => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.min(2.5, Math.max(0.3, cstTransform.scale * delta));
-    // Zoom centré sur la souris
+    const delta = e.deltaY > 0 ? 0.9 : 1.11;
+    const ns = Math.min(2.5, Math.max(0.25, cstTransform.scale * delta));
     const rect = wrap.getBoundingClientRect();
     const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    cstTransform.x = mx - (mx - cstTransform.x) * (newScale / cstTransform.scale);
-    cstTransform.y = my - (my - cstTransform.y) * (newScale / cstTransform.scale);
-    cstTransform.scale = newScale;
+    cstTransform.x = mx - (mx - cstTransform.x) * (ns / cstTransform.scale);
+    cstTransform.y = my - (my - cstTransform.y) * (ns / cstTransform.scale);
+    cstTransform.scale = ns;
     applyTransform();
   };
 }
