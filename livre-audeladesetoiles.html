@@ -93,6 +93,253 @@
 .field input, .field textarea, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-size: .88rem; outline: none; font-family: 'Syne', sans-serif; }
 .field input:focus, .field textarea:focus, .field select:focus { border-color: #f59e0b; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+/* ── CONSTELLATION VIEW ─────────────────────────────────────────────────────── */
+#constellation-view {
+  display: none;
+  position: fixed;
+  inset: 0 0 0 52px;
+  z-index: 200;
+  background: #07080f;
+  flex-direction: column;
+}
+#constellation-view.open { display: flex; }
+
+.cst-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  background: rgba(10,11,20,.9);
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.cst-toolbar h2 {
+  font-family: 'Clash Display', 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f59e0b;
+  letter-spacing: .06em;
+  margin: 0;
+  flex: 1;
+}
+.cst-close {
+  background: none;
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.5);
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-family: 'Syne', sans-serif;
+  font-size: .78rem;
+  cursor: pointer;
+  transition: all .2s;
+}
+.cst-close:hover { border-color: #f59e0b; color: #f59e0b; }
+
+.cst-legend {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.cst-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Syne', sans-serif;
+  font-size: .68rem;
+  color: rgba(255,255,255,.4);
+}
+.cst-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+#cst-canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+}
+#cst-canvas-wrap.dragging { cursor: grabbing; }
+#cst-canvas { position: absolute; inset: 0; }
+
+/* Book node cards on canvas */
+.cst-node {
+  position: absolute;
+  width: 160px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: filter .2s;
+  user-select: none;
+}
+.cst-node:hover .cst-card { border-color: #f59e0b; box-shadow: 0 0 24px rgba(245,158,11,.25), 0 0 60px rgba(245,158,11,.08); }
+.cst-node:hover .cst-node-glow { opacity: 1; }
+.cst-node.selected .cst-card { border-color: #f59e0b; box-shadow: 0 0 32px rgba(245,158,11,.4), 0 0 80px rgba(245,158,11,.12); }
+
+.cst-node-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,158,11,.12) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity .4s;
+  pointer-events: none;
+}
+.cst-card {
+  background: rgba(14,15,28,.92);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: 14px;
+  transition: border-color .2s, box-shadow .3s;
+  position: relative;
+  z-index: 2;
+}
+.cst-card-orb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.cst-card-title {
+  font-family: 'Clash Display', 'Syne', sans-serif;
+  font-size: .85rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+.cst-card-genre {
+  font-family: 'Syne', sans-serif;
+  font-size: .62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #f59e0b;
+  margin-bottom: 8px;
+  opacity: .75;
+}
+.cst-card-bar-wrap {
+  height: 3px;
+  background: rgba(255,255,255,.07);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.cst-card-bar { height: 100%; border-radius: 2px; }
+.cst-card-meta {
+  font-family: 'Syne', sans-serif;
+  font-size: .63rem;
+  color: rgba(255,255,255,.35);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Connector lines SVG */
+#cst-svg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Detail panel */
+.cst-detail {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: 240px;
+  background: rgba(10,11,20,.95);
+  border: 1px solid rgba(245,158,11,.3);
+  border-radius: 14px;
+  padding: 20px;
+  z-index: 50;
+  transform: translateX(280px);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+}
+.cst-detail.open { transform: translateX(0); }
+.cst-detail-close {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: none; border: none;
+  color: rgba(255,255,255,.3); cursor: pointer; font-size: 1rem; line-height: 1;
+  transition: color .2s;
+}
+.cst-detail-close:hover { color: #f59e0b; }
+.cst-detail-orb {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 12px;
+}
+.cst-detail-title {
+  font-family: 'Clash Display', 'Syne', sans-serif;
+  font-size: 1.05rem; font-weight: 700; color: #fff;
+  margin-bottom: 2px; line-height: 1.2;
+}
+.cst-detail-sub {
+  font-family: 'Syne', sans-serif; font-size: .7rem;
+  color: #f59e0b; margin-bottom: 14px; opacity: .8;
+}
+.cst-detail-synopsis {
+  font-family: 'Syne', sans-serif; font-size: .75rem;
+  color: rgba(255,255,255,.45); line-height: 1.5;
+  margin-bottom: 14px;
+  font-style: italic;
+}
+.cst-detail-stat {
+  display: flex; justify-content: space-between;
+  font-family: 'Syne', sans-serif; font-size: .75rem;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.cst-detail-stat:last-of-type { border-bottom: none; }
+.cst-detail-stat .v { color: #67e8f9; font-weight: 700; }
+.cst-open-btn {
+  margin-top: 16px;
+  width: 100%;
+  background: rgba(245,158,11,.12);
+  border: 1px solid rgba(245,158,11,.3);
+  color: #f59e0b;
+  padding: 9px;
+  border-radius: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: .78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.cst-open-btn:hover { background: rgba(245,158,11,.22); }
+
+/* Hint */
+.cst-hint {
+  position: absolute;
+  bottom: 16px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Syne', sans-serif;
+  font-size: .68rem;
+  color: rgba(255,255,255,.2);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Empty constellation */
+.cst-empty {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; color: rgba(255,255,255,.25);
+  font-family: 'Syne', sans-serif; font-size: .88rem;
+}
+.cst-empty .big { font-size: 3rem; opacity: .3; }
 </style>
 </head>
 <body>
@@ -119,19 +366,19 @@
 <main class="main">
 <div class="book-layout" style="position:relative;z-index:5">
 
-  <!-- LEFT PANEL (books list OR chapters list) -->
+  <!-- LEFT PANEL -->
   <div class="book-left">
-
-    <!-- VIEW: BOOKS LIST -->
     <div id="view-books" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
       <div class="panel-head">
         <h3>📚 Mes livres</h3>
-        <button class="btn btn-primary" style="padding:5px 12px;font-size:.78rem" onclick="openNewBook()">+ Livre</button>
+        <div style="display:flex;gap:6px">
+          <button class="tb-btn" onclick="openConstellation()" title="Vue constellation" style="padding:5px 8px;font-size:.8rem">✦</button>
+          <button class="btn btn-primary" style="padding:5px 12px;font-size:.78rem" onclick="openNewBook()">+ Livre</button>
+        </div>
       </div>
       <div class="books-list" id="books-list"></div>
     </div>
 
-    <!-- VIEW: CHAPTERS LIST (shown when a book is open) -->
     <div id="view-chapters" style="display:none;flex-direction:column;flex:1;overflow:hidden">
       <div class="panel-head">
         <button class="panel-back" onclick="backToBooks()">← Livres</button>
@@ -147,19 +394,19 @@
         <div class="prog-bar"><div class="prog-fill" id="global-prog" style="width:0%"></div></div>
       </div>
     </div>
-
   </div>
 
   <!-- CENTER -->
   <div class="book-center">
-    <!-- Empty state: no book selected -->
     <div id="center-empty" class="center-empty">
       <div class="big">✦</div>
       <p>Sélectionne un livre ou crée-en un nouveau<br>pour commencer à écrire.</p>
-      <button class="btn btn-primary" onclick="openNewBook()">+ Nouveau livre</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <button class="btn btn-primary" onclick="openNewBook()">+ Nouveau livre</button>
+        <button class="btn btn-ghost" onclick="openConstellation()" style="border-color:rgba(245,158,11,.3);color:#f59e0b">✦ Constellation</button>
+      </div>
     </div>
 
-    <!-- Editor (shown when a chapter is selected) -->
     <div id="center-editor" style="display:none;flex-direction:column;flex:1;overflow:hidden">
       <div class="book-toolbar">
         <input type="text" id="chap-title-input" placeholder="Titre du chapitre…" oninput="updateChapTitle()">
@@ -206,6 +453,43 @@
       <div class="daily-prog-bar"><div class="daily-prog-fill" id="daily-prog" style="width:0%"></div></div>
       <div style="font-family:Syne,sans-serif;font-size:.68rem;color:var(--text-muted)">Objectif : 500 mots/jour</div>
     </div>
+  </div>
+</div>
+
+<!-- ══ CONSTELLATION VIEW ══════════════════════════════════════════════════════ -->
+<div id="constellation-view">
+  <div class="cst-toolbar">
+    <h2>✦ Constellation des histoires</h2>
+    <div class="cst-legend">
+      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:#f59e0b"></div>Genre similaire</div>
+      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:rgba(103,232,249,.5)"></div>Personnage partagé</div>
+      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:rgba(167,139,250,.5)"></div>Univers lié</div>
+    </div>
+    <button class="cst-close" onclick="closeConstellation()">✕ Fermer</button>
+  </div>
+
+  <div id="cst-canvas-wrap">
+    <svg id="cst-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="cst-canvas"></div>
+    <div class="cst-empty" id="cst-empty" style="display:none">
+      <div class="big">✦</div>
+      <p>Aucun livre dans ta bibliothèque.<br>Crée ton premier livre pour voir la constellation.</p>
+    </div>
+    <div class="cst-hint" id="cst-hint">Glisse pour naviguer · Scroll pour zoomer · Clique sur un livre pour le détailler</div>
+  </div>
+
+  <!-- Detail panel -->
+  <div class="cst-detail" id="cst-detail">
+    <button class="cst-detail-close" onclick="closeDetail()">✕</button>
+    <div class="cst-detail-orb" id="cd-orb"></div>
+    <div class="cst-detail-title" id="cd-title">—</div>
+    <div class="cst-detail-sub" id="cd-sub">—</div>
+    <div class="cst-detail-synopsis" id="cd-synopsis"></div>
+    <div class="cst-detail-stat"><span>Chapitres</span><span class="v" id="cd-chaps">0</span></div>
+    <div class="cst-detail-stat"><span>Mots écrits</span><span class="v" id="cd-words">0</span></div>
+    <div class="cst-detail-stat"><span>Progression</span><span class="v" id="cd-pct">0%</span></div>
+    <div class="cst-detail-stat"><span>Objectif</span><span class="v" id="cd-goal">50 000</span></div>
+    <button class="cst-open-btn" id="cd-open-btn">→ Ouvrir le livre</button>
   </div>
 </div>
 
@@ -267,10 +551,8 @@
 })();
 
 // ── État global ───────────────────────────────────────────────────────────────
-// Structure: { books: [ { id, title, subtitle, genre, goal, synopsis, chapters, characters, wordsByDay } ] }
 let library = JSON.parse(localStorage.getItem('sh_library') || 'null');
 
-// Migration: ancien format sh_livre → nouveau format
 if (!library) {
   const old = localStorage.getItem('sh_livre');
   if (old) {
@@ -282,10 +564,10 @@ if (!library) {
   saveLibrary();
 }
 
-let currentBookId = null;   // livre ouvert
-let currentChapId = null;   // chapitre ouvert
+let currentBookId = null;
+let currentChapId = null;
 let saveTimer = null;
-let editBookId = null;       // livre en cours d'édition dans le modal
+let editBookId = null;
 const TODAY = new Date().toISOString().substring(0,10);
 
 function saveLibrary() {
@@ -331,18 +613,11 @@ function openBook(id) {
   const bk = currentBook();
   if (!bk) return;
 
-  // Basculer vue gauche
   document.getElementById('view-books').style.display = 'none';
   document.getElementById('view-chapters').style.display = 'flex';
-
-  // Titre & genre du livre
   document.getElementById('current-book-title').textContent = bk.title;
   document.getElementById('current-book-genre').textContent = bk.genre || '';
-
-  // Panneau droit
   document.getElementById('rp-book-name').textContent = '✦ ' + bk.title;
-
-  // Centre : vider l'éditeur, montrer empty state
   document.getElementById('center-empty').style.display = 'flex';
   document.getElementById('center-editor').style.display = 'none';
   document.getElementById('book-editor').value = '';
@@ -354,7 +629,7 @@ function openBook(id) {
   renderChapters();
   renderChars();
   renderStats();
-  renderBooks(); // mettre à jour la surbrillance
+  renderBooks();
 }
 
 function backToBooks() {
@@ -420,7 +695,6 @@ function loadChapter(id) {
 
   document.getElementById('center-empty').style.display = 'none';
   document.getElementById('center-editor').style.display = 'flex';
-
   document.getElementById('chap-title-input').value = c.title||'';
   document.getElementById('book-editor').value = c.text||'';
   document.getElementById('chap-notes').value = c.notes||'';
@@ -510,7 +784,6 @@ function saveBook() {
       bk.genre = document.getElementById('b-genre').value.trim();
       bk.goal = parseInt(document.getElementById('b-goal').value)||50000;
       bk.synopsis = document.getElementById('b-synopsis').value.trim();
-      // Mettre à jour l'affichage
       document.getElementById('current-book-title').textContent = bk.title;
       document.getElementById('current-book-genre').textContent = bk.genre||'';
       document.getElementById('rp-book-name').textContent = '✦ '+bk.title;
@@ -591,6 +864,359 @@ function removeChar(id) {
   bk.characters = (bk.characters||[]).filter(c=>c.id!==id);
   saveLibrary();
   renderChars();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── CONSTELLATION ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Palette d'orbes par index
+const CST_PALETTE = [
+  { bg: 'rgba(245,158,11,.18)', border: '#f59e0b', glow: 'rgba(245,158,11,.35)', bar: 'linear-gradient(90deg,#f59e0b,#fcd34d)', emoji: '✦' },
+  { bg: 'rgba(103,232,249,.14)', border: '#67e8f9', glow: 'rgba(103,232,249,.3)', bar: 'linear-gradient(90deg,#67e8f9,#a5f3fc)', emoji: '◈' },
+  { bg: 'rgba(167,139,250,.16)', border: '#a78bfa', glow: 'rgba(167,139,250,.3)', bar: 'linear-gradient(90deg,#a78bfa,#c4b5fd)', emoji: '◆' },
+  { bg: 'rgba(249,168,212,.14)', border: '#f9a8d4', glow: 'rgba(249,168,212,.3)', bar: 'linear-gradient(90deg,#f9a8d4,#fbcfe8)', emoji: '❋' },
+  { bg: 'rgba(134,239,172,.14)', border: '#86efac', glow: 'rgba(134,239,172,.3)', bar: 'linear-gradient(90deg,#86efac,#bbf7d0)', emoji: '✿' },
+  { bg: 'rgba(253,186,116,.14)', border: '#fbb060', glow: 'rgba(253,186,116,.3)', bar: 'linear-gradient(90deg,#fbb060,#fde68a)', emoji: '⬡' },
+];
+
+// Positions sur le canvas (sauvegardées)
+let cstPositions = {};
+let cstTransform = { x: 0, y: 0, scale: 1 };
+let cstDrag = { active: false, sx: 0, sy: 0, ox: 0, oy: 0 };
+let cstSelectedId = null;
+
+// Étoiles de fond propres à la constellation
+let cstBgStars = null;
+
+function genCstStars(wrap) {
+  if (cstBgStars) return;
+  cstBgStars = document.createElement('canvas');
+  cstBgStars.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:0;';
+  cstBgStars.width = window.innerWidth;
+  cstBgStars.height = window.innerHeight;
+  const ctx = cstBgStars.getContext('2d');
+  for (let i = 0; i < 220; i++) {
+    const x = Math.random() * cstBgStars.width;
+    const y = Math.random() * cstBgStars.height;
+    const r = Math.random() * 1.2 + .2;
+    const a = Math.random() * .5 + .05;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fill();
+  }
+  wrap.insertBefore(cstBgStars, wrap.firstChild);
+}
+
+function openConstellation() {
+  const view = document.getElementById('constellation-view');
+  view.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const wrap = document.getElementById('cst-canvas-wrap');
+  genCstStars(wrap);
+  renderConstellation();
+  setupCstDrag();
+}
+
+function closeConstellation() {
+  document.getElementById('constellation-view').classList.remove('open');
+  document.body.style.overflow = '';
+  closeDetail();
+}
+
+// Calcule les positions en cercle ou grille selon le nb de livres
+function getDefaultPositions(books) {
+  const W = window.innerWidth - 52;
+  const H = window.innerHeight - 52;
+  const cx = W / 2, cy = H / 2;
+  const n = books.length;
+  if (n === 0) return {};
+  const positions = {};
+  if (n === 1) {
+    positions[books[0].id] = { x: cx, y: cy };
+  } else if (n <= 6) {
+    const r = Math.min(W, H) * 0.28;
+    books.forEach((b, i) => {
+      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+      positions[b.id] = { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r };
+    });
+  } else {
+    // Grille organique
+    const cols = Math.ceil(Math.sqrt(n));
+    const gapX = Math.min(220, (W - 120) / cols);
+    const gapY = Math.min(240, (H - 120) / Math.ceil(n / cols));
+    const startX = cx - (cols - 1) * gapX / 2;
+    const startY = cy - (Math.ceil(n / cols) - 1) * gapY / 2;
+    books.forEach((b, i) => {
+      const col = i % cols, row = Math.floor(i / cols);
+      const jitter = (row % 2) * gapX * 0.2;
+      positions[b.id] = { x: startX + col * gapX + jitter, y: startY + row * gapY };
+    });
+  }
+  return positions;
+}
+
+// Détecte les connexions entre livres
+function getConnections(books) {
+  const connections = [];
+  for (let i = 0; i < books.length; i++) {
+    for (let j = i + 1; j < books.length; j++) {
+      const a = books[i], b = books[j];
+      // Genre similaire
+      if (a.genre && b.genre) {
+        const ga = a.genre.toLowerCase().split(/[\s,\/]+/);
+        const gb = b.genre.toLowerCase().split(/[\s,\/]+/);
+        const shared = ga.filter(g => gb.includes(g) && g.length > 2);
+        if (shared.length) { connections.push({ a: a.id, b: b.id, type: 'genre', label: shared[0] }); continue; }
+      }
+      // Personnage partagé
+      const charsA = (a.characters||[]).map(c=>c.name.toLowerCase().trim());
+      const charsB = (b.characters||[]).map(c=>c.name.toLowerCase().trim());
+      const sharedChar = charsA.find(c => charsB.includes(c) && c.length > 1);
+      if (sharedChar) { connections.push({ a: a.id, b: b.id, type: 'character', label: sharedChar }); continue; }
+      // Même univers (mot-clé dans le titre ou synopsis)
+      const wordsA = ((a.title||'')+' '+(a.synopsis||'')).toLowerCase().split(/\s+/);
+      const wordsB = ((b.title||'')+' '+(b.synopsis||'')).toLowerCase().split(/\s+/);
+      const stopWords = new Set(['de','du','des','le','la','les','un','une','et','en','au','aux','sur','dans','par','pour','est','il','elle','the','of','and','a','in','to','is']);
+      const sharedWord = wordsA.find(w => w.length > 4 && !stopWords.has(w) && wordsB.includes(w));
+      if (sharedWord) { connections.push({ a: a.id, b: b.id, type: 'universe', label: sharedWord }); }
+    }
+  }
+  return connections;
+}
+
+function renderConstellation() {
+  const books = library.books;
+  const canvas = document.getElementById('cst-canvas');
+  const svg = document.getElementById('cst-svg');
+  const empty = document.getElementById('cst-empty');
+  const hint = document.getElementById('cst-hint');
+
+  canvas.innerHTML = '';
+  svg.innerHTML = '';
+
+  if (!books.length) {
+    empty.style.display = 'flex';
+    hint.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  hint.style.display = 'block';
+
+  // Initialiser positions manquantes
+  const defaults = getDefaultPositions(books);
+  books.forEach(b => {
+    if (!cstPositions[b.id]) cstPositions[b.id] = defaults[b.id] || { x: 400, y: 300 };
+  });
+
+  // Connexions SVG
+  const connections = getConnections(books);
+  const connColors = { genre: '#f59e0b', character: 'rgba(103,232,249,.6)', universe: 'rgba(167,139,250,.5)' };
+  connections.forEach(conn => {
+    const posA = cstPositions[conn.a], posB = cstPositions[conn.b];
+    if (!posA || !posB) return;
+    const mx = (posA.x + posB.x) / 2, my = (posA.y + posB.y) / 2;
+    // Courbe de Bézier légèrement arquée
+    const dx = posB.x - posA.x, dy = posB.y - posA.y;
+    const nx = -dy * 0.15, ny = dx * 0.15;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${posA.x},${posA.y} Q${mx+nx},${my+ny} ${posB.x},${posB.y}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', connColors[conn.type] || 'rgba(255,255,255,.15)');
+    path.setAttribute('stroke-width', '1');
+    path.setAttribute('stroke-dasharray', '4 6');
+    path.setAttribute('opacity', '0.55');
+    svg.appendChild(path);
+    // Petit label au milieu
+    if (conn.label) {
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', mx + nx * 0.5);
+      txt.setAttribute('y', my + ny * 0.5 - 4);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-family', 'Syne, sans-serif');
+      txt.setAttribute('font-size', '9');
+      txt.setAttribute('fill', connColors[conn.type] || 'rgba(255,255,255,.3)');
+      txt.setAttribute('opacity', '0.6');
+      txt.textContent = conn.label;
+      svg.appendChild(txt);
+    }
+  });
+
+  // Nœuds livres
+  books.forEach((b, i) => {
+    const pos = cstPositions[b.id];
+    const pal = CST_PALETTE[i % CST_PALETTE.length];
+    const tw = totalWords(b);
+    const pct = Math.min(100, Math.round(tw / (b.goal || 50000) * 100));
+
+    const node = document.createElement('div');
+    node.className = 'cst-node' + (cstSelectedId === b.id ? ' selected' : '');
+    node.style.left = pos.x + 'px';
+    node.style.top = pos.y + 'px';
+    node.dataset.id = b.id;
+
+    node.innerHTML = `
+      <div class="cst-node-glow" style="background:radial-gradient(circle,${pal.glow} 0%,transparent 70%)"></div>
+      <div class="cst-card" style="border-color:${b.id===cstSelectedId?pal.border:'rgba(255,255,255,.1)'}">
+        <div class="cst-card-orb" style="background:${pal.bg};border:1px solid ${pal.border}40">${pal.emoji}</div>
+        <div class="cst-card-title">${b.title}</div>
+        ${b.genre ? `<div class="cst-card-genre">${b.genre}</div>` : ''}
+        <div class="cst-card-bar-wrap">
+          <div class="cst-card-bar" style="width:${pct}%;background:${pal.bar}"></div>
+        </div>
+        <div class="cst-card-meta">
+          <span>${(b.chapters||[]).length} chap.</span>
+          <span>${pct}%</span>
+        </div>
+      </div>`;
+
+    // Drag du nœud
+    let nodeDragActive = false, nsx, nsy, nox, noy;
+    node.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      nodeDragActive = false;
+      nsx = e.clientX; nsy = e.clientY;
+      nox = pos.x; noy = pos.y;
+      function onMove(ev) {
+        const dx = (ev.clientX - nsx) / cstTransform.scale;
+        const dy = (ev.clientY - nsy) / cstTransform.scale;
+        if (!nodeDragActive && Math.abs(dx) + Math.abs(dy) > 5) nodeDragActive = true;
+        if (!nodeDragActive) return;
+        pos.x = nox + dx; pos.y = noy + dy;
+        cstPositions[b.id] = pos;
+        node.style.left = pos.x + 'px'; node.style.top = pos.y + 'px';
+        renderCstLines();
+      }
+      function onUp() {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+        if (!nodeDragActive) selectBook(b.id, pal, i);
+      }
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    });
+
+    canvas.appendChild(node);
+  });
+
+  applyTransform();
+}
+
+function renderCstLines() {
+  const svg = document.getElementById('cst-svg');
+  svg.innerHTML = '';
+  const books = library.books;
+  const connections = getConnections(books);
+  const connColors = { genre: '#f59e0b', character: 'rgba(103,232,249,.6)', universe: 'rgba(167,139,250,.5)' };
+  connections.forEach(conn => {
+    const posA = cstPositions[conn.a], posB = cstPositions[conn.b];
+    if (!posA || !posB) return;
+    const mx = (posA.x + posB.x) / 2, my = (posA.y + posB.y) / 2;
+    const dx = posB.x - posA.x, dy = posB.y - posA.y;
+    const nx = -dy * 0.15, ny = dx * 0.15;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${posA.x},${posA.y} Q${mx+nx},${my+ny} ${posB.x},${posB.y}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', connColors[conn.type] || 'rgba(255,255,255,.15)');
+    path.setAttribute('stroke-width', '1');
+    path.setAttribute('stroke-dasharray', '4 6');
+    path.setAttribute('opacity', '0.55');
+    svg.appendChild(path);
+    if (conn.label) {
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', mx + nx * 0.5);
+      txt.setAttribute('y', my + ny * 0.5 - 4);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-family', 'Syne, sans-serif');
+      txt.setAttribute('font-size', '9');
+      txt.setAttribute('fill', connColors[conn.type] || 'rgba(255,255,255,.3)');
+      txt.setAttribute('opacity', '0.6');
+      txt.textContent = conn.label;
+      svg.appendChild(txt);
+    }
+  });
+}
+
+// Sélection d'un livre → panneau détail
+function selectBook(id, pal, idx) {
+  cstSelectedId = id;
+  const bk = library.books.find(b => b.id === id); if (!bk) return;
+  const tw = totalWords(bk);
+  const pct = Math.min(100, Math.round(tw / (bk.goal || 50000) * 100));
+
+  // Mettre à jour surbrillance des nodes
+  document.querySelectorAll('.cst-node').forEach(n => {
+    const isSelected = n.dataset.id === id;
+    n.classList.toggle('selected', isSelected);
+    n.querySelector('.cst-card').style.borderColor = isSelected ? (pal ? pal.border : '#f59e0b') : 'rgba(255,255,255,.1)';
+  });
+
+  // Panneau détail
+  const p = pal || CST_PALETTE[idx % CST_PALETTE.length];
+  document.getElementById('cd-orb').style.cssText = `background:${p.bg};border:1px solid ${p.border}60;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem`;
+  document.getElementById('cd-orb').textContent = p.emoji;
+  document.getElementById('cd-title').textContent = bk.title;
+  document.getElementById('cd-sub').textContent = [bk.subtitle, bk.genre].filter(Boolean).join(' · ') || (bk.genre || '—');
+  document.getElementById('cd-synopsis').textContent = bk.synopsis || 'Aucun synopsis renseigné.';
+  document.getElementById('cd-chaps').textContent = (bk.chapters||[]).length;
+  document.getElementById('cd-words').textContent = tw.toLocaleString('fr-FR');
+  document.getElementById('cd-pct').textContent = pct + '%';
+  document.getElementById('cd-goal').textContent = (bk.goal||50000).toLocaleString('fr-FR');
+  document.getElementById('cd-open-btn').onclick = () => { closeConstellation(); openBook(id); };
+  document.getElementById('cst-detail').classList.add('open');
+}
+
+function closeDetail() {
+  cstSelectedId = null;
+  document.getElementById('cst-detail').classList.remove('open');
+  document.querySelectorAll('.cst-node').forEach(n => {
+    n.classList.remove('selected');
+    n.querySelector('.cst-card').style.borderColor = 'rgba(255,255,255,.1)';
+  });
+}
+
+// Pan du canvas
+function setupCstDrag() {
+  const wrap = document.getElementById('cst-canvas-wrap');
+  // eviter double-binding
+  wrap.onmousedown = e => {
+    if (e.target.closest('.cst-node') || e.target.closest('.cst-detail')) return;
+    cstDrag.active = true;
+    cstDrag.sx = e.clientX; cstDrag.sy = e.clientY;
+    cstDrag.ox = cstTransform.x; cstDrag.oy = cstTransform.y;
+    wrap.classList.add('dragging');
+  };
+  window.onmousemove = e => {
+    if (!cstDrag.active) return;
+    cstTransform.x = cstDrag.ox + (e.clientX - cstDrag.sx);
+    cstTransform.y = cstDrag.oy + (e.clientY - cstDrag.sy);
+    applyTransform();
+  };
+  window.onmouseup = () => {
+    if (!cstDrag.active) return;
+    cstDrag.active = false;
+    document.getElementById('cst-canvas-wrap').classList.remove('dragging');
+  };
+  wrap.onwheel = e => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newScale = Math.min(2.5, Math.max(0.3, cstTransform.scale * delta));
+    // Zoom centré sur la souris
+    const rect = wrap.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    cstTransform.x = mx - (mx - cstTransform.x) * (newScale / cstTransform.scale);
+    cstTransform.y = my - (my - cstTransform.y) * (newScale / cstTransform.scale);
+    cstTransform.scale = newScale;
+    applyTransform();
+  };
+}
+
+function applyTransform() {
+  const t = `translate(${cstTransform.x}px,${cstTransform.y}px) scale(${cstTransform.scale})`;
+  document.getElementById('cst-canvas').style.transform = t;
+  document.getElementById('cst-svg').style.transform = t;
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
