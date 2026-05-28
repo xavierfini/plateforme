@@ -797,14 +797,16 @@ const PLOT_ICONS  = ['⚔️','💔','🔍','🌑','🛡️','💫','🔥','🌊
 
 // Thèmes narratifs avec mots-clés pour détection automatique
 const PLOT_THEMES = [
-  { name:'Romance', icon:'💔', keywords:['amour','aimer','embrasser','baiser','cœur','sentiment','désir','attirer','séduire','tendresse','passion','jalousie','relation'] },
-  { name:'Conflit', icon:'⚔️', keywords:['guerre','combat','bataille','ennemi','attaque','défendre','vaincre','duel','violence','affronter','trahison','menace'] },
-  { name:'Mystère', icon:'🔍', keywords:['secret','mystère','découvrir','enquête','indice','cache','révéler','inconnu','ombre','disparaître','suspect','vérité'] },
-  { name:'Voyage', icon:'🚀', keywords:['voyage','partir','route','chemin','destination','quête','explorer','traverser','fuir','errer','aventure','marcher'] },
-  { name:'Pouvoir', icon:'👑', keywords:['pouvoir','contrôle','autorité','règne','magie','force','dominer','trône','empire','roi','reine','héritage'] },
-  { name:'Deuil', icon:'🌑', keywords:['mort','mourir','perdre','chagrin','deuil','disparition','larmes','souffrir','manquer','souvenir','douleur','oubli'] },
-  { name:'Alliance', icon:'🛡️', keywords:['allié','ami','confiance','ensemble','équipe','loyal','pacte','aide','soutien','protéger','union','fraternité'] },
-  { name:'Trahison', icon:'🗡️', keywords:['trahir','mentir','mensonge','manipuler','duper','faux','complot','comploter','piège','tromper','abandon','déserteur'] },
+  { name:'Le fil du cœur', icon:'💔', keywords:['amour','aimer','embrasser','baiser','cœur','sentiment','désir','attirer','séduire','tendresse','passion','jalousie','relation','amoureux','amante','amoureuse','sentiment'] },
+  { name:'Le fracas des lames', icon:'⚔️', keywords:['guerre','combat','bataille','ennemi','attaque','défendre','vaincre','duel','violence','affronter','menace','arme','soldat','armée','sang','blessure','assaut'] },
+  { name:'Les ombres du secret', icon:'🔍', keywords:['secret','mystère','découvrir','enquête','indice','cache','révéler','inconnu','ombre','disparaître','suspect','vérité','cacher','dissimuler','enquêter','masque'] },
+  { name:'La route de l\'ailleurs', icon:'🌍', keywords:['voyage','partir','route','chemin','destination','quête','explorer','traverser','fuir','errer','aventure','marcher','horizon','carrefour','départ','distance'] },
+  { name:'L\'ivresse du pouvoir', icon:'👑', keywords:['pouvoir','contrôle','autorité','règne','magie','force','dominer','trône','empire','roi','reine','héritage','influence','décider','ordonner','gouverner','commandement'] },
+  { name:'Les larmes du passé', icon:'🌑', keywords:['mort','mourir','perdre','chagrin','deuil','disparition','larmes','souffrir','manquer','souvenir','douleur','oubli','pleurer','regretter','endeuillé','fantôme','absence'] },
+  { name:'Le serment des alliés', icon:'🛡️', keywords:['allié','ami','confiance','ensemble','équipe','loyal','pacte','aide','soutien','protéger','union','fraternité','fidèle','compagnon','serment','promesse','solidarité'] },
+  { name:'La lame dans le dos', icon:'🗡️', keywords:['trahir','mentir','mensonge','manipuler','duper','faux','complot','comploter','piège','tromper','abandon','déserteur','traître','double-jeu','conspirer','vengeance','rancœur'] },
+  { name:'La soif de vengeance', icon:'🔥', keywords:['vengeance','venger','rancune','punir','châtiment','représailles','colère','haine','rancœur','régler','compte','revanche','impardonnable','dette'] },
+  { name:'Les chaînes de l\'identité', icon:'🪞', keywords:['identité','qui suis','mémoire','origine','passé','famille','héritage','sang','racines','découvrir','vrai','faux','masque','changer','devenir','transformation'] },
 ];
 
 let cstPos = {};
@@ -824,28 +826,46 @@ function analyzeBook(bk) {
   const knownNames = new Map(); // lowercase → {id, name, role, desc}
   registeredChars.forEach(c => knownNames.set(c.name.toLowerCase(), c));
 
-  // 2. Pour chaque chapitre, trouver les personnages mentionnés
+  // 2. Compter les occurrences de mots capitalisés sur TOUT le texte du livre
+  //    pour ne garder que les "candidats personnages" qui apparaissent ≥ 2 fois
+  const stopWords = new Set(['Il','Elle','Ils','Elles','Mais','Donc','Car','Comme','Quand','Dans',
+    'Avec','Pour','Sans','Sur','Sous','Une','Les','Des','Aux','Par','Pas','Plus','Très','Bien',
+    'Tout','Tous','Toute','Toutes','Mon','Ton','Son','Leur','Ses','Mes','Tes','Nos','Vos','Leurs',
+    'Ce','Cet','Cette','Ces','Cela','Ceci','Lui','Eux','Moi','Toi','Soi','Nous','Vous','Qui','Que',
+    'Quoi','Dont','Où','Et','Ou','Ni','Ne','Non','Oui','Si','La','Le','Un','Au','Du','En','Est',
+    'Après','Avant','Alors','Aussi','Même','Encore','Jamais','Toujours','Déjà','Ici','Là','Puis',
+    'Enfin','Soudain','Pourtant','Cependant','Néanmoins','Depuis','Jusqu']);
+
+  const globalOccurrences = new Map(); // name → count
+  chapters.forEach(ch => {
+    const fullText = (ch.text || '') + ' ' + (ch.notes || '');
+    // Chercher tous les mots capitalisés non en tout début de texte
+    const matches = fullText.match(/[^.!?\n]\s+([A-ZÀÂÉÈÊËÏÎÔÙÛÜÇ][a-zàâéèêëïîôùûüç]{2,})/g) || [];
+    matches.forEach(m => {
+      const name = m.trim();
+      if (name.length >= 3 && name.length <= 30 && !stopWords.has(name)) {
+        globalOccurrences.set(name, (globalOccurrences.get(name) || 0) + 1);
+      }
+    });
+  });
+  // Candidats retenus : ≥ 2 occurrences globales, ou enregistrés manuellement
+  const autoExtracted = new Set([...globalOccurrences.entries()]
+    .filter(([,count]) => count >= 2)
+    .map(([name]) => name));
+
+  // 3. Pour chaque chapitre, trouver les personnages mentionnés
   const chapData = chapters.map((ch, idx) => {
     const fullText = (ch.text || '') + ' ' + (ch.notes || '');
     const fullLower = fullText.toLowerCase();
 
-    // Personnages trouvés (enregistrés + mentions de mots capitalisés)
     const foundChars = new Set();
+    // Personnages enregistrés manuellement
     knownNames.forEach((c, key) => {
       if (fullLower.includes(key)) foundChars.add(c.name);
     });
-
-    // Extraction heuristique de noms propres (mots avec majuscule, 3+ lettres, pas en début de phrase)
-    const words = fullText.match(/(?<![.!?\n])\s+([A-ZÀÂÉÈÊËÏÎÔÙÛÜÇ][a-zàâéèêëïîôùûüç]{2,})/g) || [];
-    words.forEach(w => {
-      const name = w.trim();
-      if (name.length >= 3 && name.length <= 25) {
-        // Exclure les mots courants
-        const stopWords = ['Il','Elle','Ils','Elles','Mais','Donc','Car','Comme','Quand','Dans','Avec','Pour','Sans','Sur','Sous','Une','Les','Des','Aux'];
-        if (!stopWords.includes(name) && !foundChars.has(name)) {
-          foundChars.add(name);
-        }
-      }
+    // Candidats extraits automatiquement (apparaissent dans ce chapitre)
+    autoExtracted.forEach(name => {
+      if (!foundChars.has(name) && fullText.includes(name)) foundChars.add(name);
     });
 
     // Détection des thèmes/intrigues dans ce chapitre
@@ -899,15 +919,18 @@ function analyzeBook(bk) {
   });
   plots.sort((a,b) => b.score - a.score);
 
-  // 4. Consolider la liste finale des personnages (enregistrés + extraits)
+  // 4. Consolider la liste finale des personnages (enregistrés + extraits ≥2 fois)
   const allCharNames = new Set();
   chapData.forEach(ch => ch.chars.forEach(c => allCharNames.add(c)));
+  // Ajouter aussi les personnages enregistrés même s'ils ne sont pas détectés dans le texte
+  registeredChars.forEach(c => allCharNames.add(c.name));
+
   const allChars = [...allCharNames].map(name => {
     const reg = knownNames.get(name.toLowerCase());
-    // Compter dans combien de chapitres ils apparaissent
     const chapCount = chapData.filter(ch => ch.chars.includes(name)).length;
-    return { name, role: reg?.role || '', desc: reg?.desc || '', chapCount, isRegistered: !!reg };
-  }).sort((a,b) => b.chapCount - a.chapCount);
+    const occurrences = globalOccurrences.get(name) || (reg ? 999 : 0);
+    return { name, role: reg?.role || '', desc: reg?.desc || '', chapCount, isRegistered: !!reg, occurrences };
+  }).sort((a,b) => b.chapCount - a.chapCount || b.occurrences - a.occurrences);
 
   return { chapData, plots, allChars };
 }
@@ -1292,8 +1315,9 @@ function onClickChar(ch, idx, color, chapData, plots) {
     stats:[
       ['Rôle', ch.role||'Non défini'],
       ['Chapitres', ch.chapCount],
+      ['Occurrences', ch.occurrences >= 999 ? '—' : ch.occurrences+' fois'],
       ['Intrigues', plotsMentioned.length],
-      ['Source', ch.isRegistered?'Enregistré':'Extrait auto'],
+      ['Source', ch.isRegistered?'Enregistré':'Extrait auto (≥2×)'],
     ],
     links:[...chapsMentioned,...plotsMentioned],
     linksTitle:'Présences narratives',
