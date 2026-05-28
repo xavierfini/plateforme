@@ -826,46 +826,21 @@ function analyzeBook(bk) {
   const knownNames = new Map(); // lowercase → {id, name, role, desc}
   registeredChars.forEach(c => knownNames.set(c.name.toLowerCase(), c));
 
-  // 2. Compter les occurrences de mots capitalisés sur TOUT le texte du livre
-  //    pour ne garder que les "candidats personnages" qui apparaissent ≥ 2 fois
-  const stopWords = new Set(['Il','Elle','Ils','Elles','Mais','Donc','Car','Comme','Quand','Dans',
-    'Avec','Pour','Sans','Sur','Sous','Une','Les','Des','Aux','Par','Pas','Plus','Très','Bien',
-    'Tout','Tous','Toute','Toutes','Mon','Ton','Son','Leur','Ses','Mes','Tes','Nos','Vos','Leurs',
-    'Ce','Cet','Cette','Ces','Cela','Ceci','Lui','Eux','Moi','Toi','Soi','Nous','Vous','Qui','Que',
-    'Quoi','Dont','Où','Et','Ou','Ni','Ne','Non','Oui','Si','La','Le','Un','Au','Du','En','Est',
-    'Après','Avant','Alors','Aussi','Même','Encore','Jamais','Toujours','Déjà','Ici','Là','Puis',
-    'Enfin','Soudain','Pourtant','Cependant','Néanmoins','Depuis','Jusqu']);
-
-  const globalOccurrences = new Map(); // name → count
-  chapters.forEach(ch => {
-    const fullText = (ch.text || '') + ' ' + (ch.notes || '');
-    // Chercher tous les mots capitalisés non en tout début de texte
-    const matches = fullText.match(/[^.!?\n]\s+([A-ZÀÂÉÈÊËÏÎÔÙÛÜÇ][a-zàâéèêëïîôùûüç]{2,})/g) || [];
-    matches.forEach(m => {
-      const name = m.trim();
-      if (name.length >= 3 && name.length <= 30 && !stopWords.has(name)) {
-        globalOccurrences.set(name, (globalOccurrences.get(name) || 0) + 1);
-      }
-    });
-  });
-  // Candidats retenus : ≥ 2 occurrences globales, ou enregistrés manuellement
-  const autoExtracted = new Set([...globalOccurrences.entries()]
-    .filter(([,count]) => count >= 2)
-    .map(([name]) => name));
-
-  // 3. Pour chaque chapitre, trouver les personnages mentionnés
+  // 2. Pour chaque chapitre, trouver les personnages enregistrés mentionnés
+  const globalOccurrences = new Map();
   const chapData = chapters.map((ch, idx) => {
     const fullText = (ch.text || '') + ' ' + (ch.notes || '');
     const fullLower = fullText.toLowerCase();
 
     const foundChars = new Set();
-    // Personnages enregistrés manuellement
     knownNames.forEach((c, key) => {
-      if (fullLower.includes(key)) foundChars.add(c.name);
-    });
-    // Candidats extraits automatiquement (apparaissent dans ce chapitre)
-    autoExtracted.forEach(name => {
-      if (!foundChars.has(name) && fullText.includes(name)) foundChars.add(name);
+      if (fullLower.includes(key)) {
+        foundChars.add(c.name);
+        // Compter les occurrences globales
+        const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        const count = (fullText.match(regex) || []).length;
+        globalOccurrences.set(c.name, (globalOccurrences.get(c.name) || 0) + count);
+      }
     });
 
     // Détection des thèmes/intrigues dans ce chapitre
@@ -919,17 +894,11 @@ function analyzeBook(bk) {
   });
   plots.sort((a,b) => b.score - a.score);
 
-  // 4. Consolider la liste finale des personnages (enregistrés + extraits ≥2 fois)
-  const allCharNames = new Set();
-  chapData.forEach(ch => ch.chars.forEach(c => allCharNames.add(c)));
-  // Ajouter aussi les personnages enregistrés même s'ils ne sont pas détectés dans le texte
-  registeredChars.forEach(c => allCharNames.add(c.name));
-
-  const allChars = [...allCharNames].map(name => {
-    const reg = knownNames.get(name.toLowerCase());
-    const chapCount = chapData.filter(ch => ch.chars.includes(name)).length;
-    const occurrences = globalOccurrences.get(name) || (reg ? 999 : 0);
-    return { name, role: reg?.role || '', desc: reg?.desc || '', chapCount, isRegistered: !!reg, occurrences };
+  // 4. Consolider la liste finale des personnages (enregistrés uniquement)
+  const allChars = registeredChars.map(c => {
+    const chapCount = chapData.filter(ch => ch.chars.includes(c.name)).length;
+    const occurrences = globalOccurrences.get(c.name) || 0;
+    return { name: c.name, role: c.role || '', desc: c.desc || '', chapCount, isRegistered: true, occurrences };
   }).sort((a,b) => b.chapCount - a.chapCount || b.occurrences - a.occurrences);
 
   return { chapData, plots, allChars };
@@ -1315,9 +1284,8 @@ function onClickChar(ch, idx, color, chapData, plots) {
     stats:[
       ['Rôle', ch.role||'Non défini'],
       ['Chapitres', ch.chapCount],
-      ['Occurrences', ch.occurrences >= 999 ? '—' : ch.occurrences+' fois'],
+      ['Occurrences', ch.occurrences ? ch.occurrences+' fois' : '—'],
       ['Intrigues', plotsMentioned.length],
-      ['Source', ch.isRegistered?'Enregistré':'Extrait auto (≥2×)'],
     ],
     links:[...chapsMentioned,...plotsMentioned],
     linksTitle:'Présences narratives',
