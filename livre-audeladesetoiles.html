@@ -288,80 +288,139 @@
 @keyframes pulse-node { 0%,100%{opacity:.6}50%{opacity:1} }
 .cn-chap.active .cn-chap-inner { animation: pulse-node 2s ease-in-out infinite; }
 
-/* ── Connexions animées ── */
-@keyframes dash-flow { to { stroke-dashoffset: -40; } }
-@keyframes dash-glitch {
-  0%,100%{ stroke-dashoffset:0; opacity:.7; }
-  10%{ stroke-dashoffset:-3; opacity:.3; transform:translateX(1px); }
-  20%{ stroke-dashoffset:2; opacity:.9; transform:translateX(-1px); }
-  30%{ stroke-dashoffset:0; opacity:.6; }
+@keyframes edge-flow {
+  0% { stroke-dashoffset: 200; }
+  100% { stroke-dashoffset: 0; }
 }
-@keyframes particle-move { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes edge-glitch {
+  0%,92%,100% { transform: none; opacity: 1; }
+  93% { transform: translate(-2px,0); opacity: .5; }
+  96% { transform: translate(3px,-1px); opacity: .8; }
+  98% { transform: translate(-1px,1px); opacity: .6; }
+}
+@keyframes edge-pulse {
+  0%,100% { stroke-width: 1; opacity: .35; }
+  50% { stroke-width: 2.5; opacity: .9; }
+}
+@keyframes edge-breathe {
+  0%,100% { opacity: .15; }
+  50% { opacity: .5; }
+}
+@keyframes particle-flow {
+  0% { offset-distance: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+@keyframes node-glow-pulse {
+  0%,100% { box-shadow: 0 0 8px var(--bk-glow,transparent); }
+  50% { box-shadow: 0 0 28px var(--bk-glow,transparent), 0 0 50px var(--bk-glow,transparent); }
+}
+.cn-chap.strongly-linked .cn-chap-inner {
+  animation: node-glow-pulse 2.5s ease-in-out infinite;
+}
+.cn-char.strongly-linked .cn-char-inner {
+  animation: node-glow-pulse 2.5s ease-in-out infinite;
+}
 
-.edge-animated { animation: dash-flow 3s linear infinite; }
-.edge-pulse { animation: dash-flow 1.5s linear infinite; }
-.edge-glitch { animation: dash-glitch 2.5s steps(1) infinite; }
-.edge-breathe { animation: dash-flow 4s ease-in-out infinite; }
+/* Edges animées SVG */
+.edge-love { stroke: #f9a8d4; }
+.edge-betrayal { stroke: #ef4444; }
+.edge-secret { stroke: #a855f7; }
+.edge-alliance { stroke: #34d399; }
+.edge-rivalry { stroke: #fb923c; }
+.edge-mentor { stroke: #38bdf8; }
+.edge-manipulation { stroke: #c084fc; }
+.edge-enemy { stroke: #f43f5e; }
 
-/* Relation badges sur nœuds personnages */
-.cn-char-rel {
-  font-family:'Syne',sans-serif;font-size:.52rem;padding:1px 5px;
-  border-radius:20px;margin-top:3px;display:inline-block;
-  font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+/* ── Panneau incohérences ── */
+.cst-alerts-panel {
+  position: absolute; left: 20px; top: 20px; width: 270px;
+  background: rgba(8,9,20,.97);
+  border: 1px solid rgba(239,68,68,.25);
+  border-radius: 14px; padding: 0; z-index: 50;
+  transform: translateX(-320px);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+  max-height: calc(100vh - 120px); overflow: hidden;
+  display: flex; flex-direction: column;
 }
-.rel-love    { background:rgba(244,114,182,.15);color:#f472b6;border:1px solid rgba(244,114,182,.3); }
-.rel-enemy   { background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3); }
-.rel-mentor  { background:rgba(250,204,21,.15);color:#facc15;border:1px solid rgba(250,204,21,.3); }
-.rel-ally    { background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(34,211,153,.3); }
-.rel-rival   { background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.3); }
-.rel-manip   { background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3); }
-.rel-traitor { background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);border-style:dashed; }
+.cst-alerts-panel.open { transform: translateX(0); }
+.cst-alerts-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(239,68,68,.2);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.cst-alerts-title {
+  font-family:'Syne',sans-serif; font-size:.7rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.1em; color:#ef4444;
+  display: flex; align-items: center; gap: 6px;
+}
+.cst-alerts-badge {
+  background: #ef4444; color: #fff; border-radius: 20px;
+  padding: 1px 7px; font-size: .62rem; font-weight: 700;
+}
+.cst-alerts-close {
+  background:none; border:none; color:rgba(255,255,255,.3); cursor:pointer;
+  font-size:1rem; transition:color .2s;
+}
+.cst-alerts-close:hover { color:#ef4444; }
+.cst-alerts-body { overflow-y: auto; flex: 1; padding: 10px; }
+.cst-alert-item {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  border-left: 3px solid var(--alert-color, #ef4444);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+  cursor: pointer; transition: background .2s;
+}
+.cst-alert-item:hover { background: rgba(255,255,255,.07); }
+.cst-alert-type {
+  font-family:'Syne',sans-serif; font-size:.6rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.08em;
+  color: var(--alert-color, #ef4444); margin-bottom: 3px;
+}
+.cst-alert-msg {
+  font-family:'Syne',sans-serif; font-size:.75rem;
+  color: rgba(255,255,255,.65); line-height: 1.4;
+}
+.cst-alert-detail {
+  font-family:'Syne',sans-serif; font-size:.65rem;
+  color: rgba(255,255,255,.3); margin-top: 4px; line-height: 1.3;
+}
+.cst-no-alerts {
+  text-align:center; padding: 24px 16px;
+  font-family:'Syne',sans-serif; font-size:.78rem;
+  color: rgba(255,255,255,.25);
+}
+.cst-no-alerts .icon { font-size: 1.5rem; display:block; margin-bottom: 8px; opacity: .4; }
 
-/* Panneau incohérences */
-.cst-anomalies {
-  position:absolute;left:20px;top:20px;width:240px;
-  background:rgba(8,9,20,.97);border:1px solid rgba(239,68,68,.25);
-  border-radius:14px;padding:16px;z-index:50;
-  transform:translateX(-300px);transition:transform .35s cubic-bezier(.4,0,.2,1);
-  max-height:calc(100vh - 120px);overflow-y:auto;
+/* Bouton d'alerte dans toolbar */
+.cst-alert-btn {
+  background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.25);
+  color: rgba(239,68,68,.7); padding: 3px 10px; border-radius: 20px;
+  font-family:'Syne',sans-serif; font-size:.68rem; cursor:pointer; transition:all .2s;
+  display:flex; align-items:center; gap:5px;
 }
-.cst-anomalies.open { transform:translateX(0); }
-.cst-anomaly-close { position:absolute;top:10px;right:10px;background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:1rem;transition:color .2s; }
-.cst-anomaly-close:hover { color:#ef4444; }
-.cst-anomaly-title { font-family:'Syne',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#ef4444;margin-bottom:12px; }
-.cst-anomaly-item {
-  background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);
-  border-radius:8px;padding:8px 10px;margin-bottom:8px;cursor:pointer;
-  transition:border-color .2s;
-}
-.cst-anomaly-item:hover { border-color:rgba(239,68,68,.4); }
-.cst-anomaly-item.warn {
-  background:rgba(250,204,21,.06);border-color:rgba(250,204,21,.15);
-}
-.cst-anomaly-item.warn:hover { border-color:rgba(250,204,21,.4); }
-.cst-anomaly-icon { font-size:.85rem;margin-bottom:3px; }
-.cst-anomaly-label { font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.8);line-height:1.2; }
-.cst-anomaly-desc { font-family:'Syne',sans-serif;font-size:.65rem;color:rgba(255,255,255,.35);margin-top:3px;line-height:1.4; }
-.cst-anomaly-badge { display:inline-block;font-family:'Syne',sans-serif;font-size:.6rem;background:rgba(239,68,68,.2);color:#ef4444;border-radius:20px;padding:1px 7px;margin-top:4px; }
-.cst-anomaly-badge.warn { background:rgba(250,204,21,.2);color:#facc15; }
+.cst-alert-btn:hover { border-color:#ef4444; color:#ef4444; }
+.cst-alert-btn.has-alerts { color:#ef4444; border-color:rgba(239,68,68,.5); background:rgba(239,68,68,.12); }
+.cst-alert-count { background:#ef4444; color:#fff; border-radius:20px; padding:0 5px; font-size:.6rem; font-weight:700; }
 
-/* Légende relations */
-.cst-legend-rel { display:flex;gap:6px;align-items:center;flex-wrap:wrap; }
-.cst-legend-rel-item { display:flex;align-items:center;gap:4px;font-family:'Syne',sans-serif;font-size:.58rem;color:rgba(255,255,255,.3); }
-.cst-legend-rel-line { width:16px;height:2px;border-radius:1px; }
-
-/* Bouton anomalies */
-.cst-anomaly-btn {
-  background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);
-  color:rgba(239,68,68,.7);padding:3px 10px;border-radius:20px;
-  font-family:'Syne',sans-serif;font-size:.68rem;cursor:pointer;transition:all .2s;
-  position:relative;
+/* Légende types de relations */
+.cst-rel-legend {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
 }
-.cst-anomaly-btn:hover { border-color:rgba(239,68,68,.5);color:#ef4444; }
-.cst-anomaly-btn .badge-count {
-  position:absolute;top:-5px;right:-5px;background:#ef4444;color:#fff;
-  border-radius:50%;width:14px;height:14px;font-size:.55rem;
-  display:flex;align-items:center;justify-content:center;font-weight:700;
+.cst-rel-item {
+  display: flex; align-items: center; gap: 4px;
+  font-family:'Syne',sans-serif; font-size:.6rem;
+  color: rgba(255,255,255,.3);
+}
+.cst-rel-line {
+  width: 16px; height: 2px; border-radius: 1px; flex-shrink: 0;
+}
+.rel-tag {
+  display:inline-block; font-family:'Syne',sans-serif; font-size:.62rem;
+  padding:2px 7px; border-radius:20px; margin:2px 2px 2px 0;
+  font-weight:700;
 }
 
 /* Filtre rapide */
@@ -510,22 +569,20 @@
       <button class="cst-filter-btn" data-filter="plots" onclick="setCstFilter('plots',this)">Intrigues</button>
     </div>
 
-    <!-- Légende -->
-    <div class="cst-legend">
-      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:#f59e0b"></div>Chapitre</div>
-      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:#67e8f9"></div>Personnage</div>
-      <div class="cst-legend-item"><div class="cst-legend-dot" style="background:#a78bfa;border-radius:3px"></div>Intrigue</div>
-      <div style="width:1px;height:12px;background:rgba(255,255,255,.1);margin:0 2px"></div>
-      <div class="cst-legend-item"><div class="cst-legend-rel-line" style="background:#f472b6"></div>Amour</div>
-      <div class="cst-legend-item"><div class="cst-legend-rel-line" style="background:#ef4444;border-top:2px dashed #ef4444;height:0"></div>Ennemi</div>
-      <div class="cst-legend-item"><div class="cst-legend-rel-line" style="background:#34d399"></div>Alliance</div>
-      <div class="cst-legend-item"><div class="cst-legend-rel-line" style="background:#a78bfa"></div>Mentor</div>
-      <div class="cst-legend-item"><div class="cst-legend-rel-line" style="background:#fb923c"></div>Rivalité</div>
-      <div class="cst-legend-item"><div class="cst-legend-rel-line" style="background:#c084fc;opacity:.6"></div>Secret/Manip.</div>
+    <!-- Légende relations -->
+    <div class="cst-rel-legend">
+      <div class="cst-rel-item"><div class="cst-rel-line" style="background:#f9a8d4"></div>Amour</div>
+      <div class="cst-rel-item"><div class="cst-rel-line" style="background:#ef4444"></div>Trahison</div>
+      <div class="cst-rel-item"><div class="cst-rel-line" style="background:#a855f7"></div>Secret</div>
+      <div class="cst-rel-item"><div class="cst-rel-line" style="background:#34d399"></div>Alliance</div>
+      <div class="cst-rel-item"><div class="cst-rel-line" style="background:#fb923c"></div>Rivalité</div>
+      <div class="cst-rel-item"><div class="cst-rel-line" style="background:#38bdf8"></div>Mentor</div>
     </div>
 
-    <!-- Bouton anomalies -->
-    <button class="cst-anomaly-btn" id="cst-anomaly-btn" onclick="toggleAnomalies()" title="Incohérences narratives">⚠ Analyse <span class="badge-count" id="anomaly-badge-count" style="display:none">0</span></button>
+    <!-- Bouton incohérences -->
+    <button class="cst-alert-btn" id="cst-alert-toggle" onclick="toggleAlertsPanel()">
+      ⚠ Analyse <span class="cst-alert-count" id="cst-alert-count" style="display:none">0</span>
+    </button>
 
     <button class="cst-close" onclick="closeConstellation()">✕ Fermer</button>
   </div>
@@ -534,18 +591,25 @@
     <svg id="cst-svg" xmlns="http://www.w3.org/2000/svg"></svg>
     <div id="cst-canvas"></div>
 
-    <!-- Panneau incohérences narratives -->
-    <div class="cst-anomalies" id="cst-anomalies">
-      <button class="cst-anomaly-close" onclick="toggleAnomalies()">✕</button>
-      <div class="cst-anomaly-title">⚠ Assistant narratif</div>
-      <div id="anomaly-list"><div style="color:rgba(255,255,255,.3);font-family:Syne,sans-serif;font-size:.75rem;text-align:center;padding:16px">Analyse en cours…</div></div>
-    </div>
-
     <div class="cst-empty" id="cst-empty" style="display:none">
       <div class="big">✦</div>
       <p id="cst-empty-msg">Ce livre n'a pas encore de chapitres.<br>Commence à écrire pour voir la toile narrative.</p>
     </div>
     <div class="cst-tooltip" id="cst-tooltip"></div>
+
+    <!-- Panneau incohérences narratives -->
+    <div class="cst-alerts-panel" id="cst-alerts-panel">
+      <div class="cst-alerts-header">
+        <div class="cst-alerts-title">
+          ⚠ Assistant narratif
+          <span class="cst-alerts-badge" id="cst-alerts-badge">0</span>
+        </div>
+        <button class="cst-alerts-close" onclick="toggleAlertsPanel()">✕</button>
+      </div>
+      <div class="cst-alerts-body" id="cst-alerts-body">
+        <div class="cst-no-alerts"><span class="icon">✦</span>Aucune incohérence détectée.</div>
+      </div>
+    </div>
 
     <!-- Panneau de détail -->
     <div class="cst-detail" id="cst-detail">
@@ -909,55 +973,17 @@ let cstBgCanvas = null;
 let cstCurrentBookId = null;
 let cstFilter = 'all';
 
-// ── Détection des types de relations ────────────────────────────────────────
-const REL_TYPES = {
-  love:    { label:'Amour',      color:'#f472b6', dash:'none',  width:1.8, anim:'pulse',   glow:true,  keywords:['amour','aimer','embrasser','baiser','désir','séduire','tendresse','passion','amoureux','amante','regard'] },
-  enemy:   { label:'Ennemi',     color:'#ef4444', dash:'5 3',   width:1.6, anim:'glitch',  glow:false, keywords:['ennemi','détester','hair','adversaire','haïr','guerre','tuer','menacer','attaquer','affronter'] },
-  ally:    { label:'Alliance',   color:'#34d399', dash:'none',  width:1.4, anim:'breathe', glow:false, keywords:['allié','ami','fidèle','protéger','soutenir','confiance','ensemble','pacte','aide','union','serment'] },
-  mentor:  { label:'Mentor',     color:'#facc15', dash:'3 2',   width:1.3, anim:'flow',    glow:false, keywords:['mentor','apprendre','enseigner','guider','maître','élève','conseil','transmettre','sage','protégé'] },
-  rival:   { label:'Rivalité',   color:'#fb923c', dash:'4 2',   width:1.2, anim:'flow',    glow:false, keywords:['rival','concurrencer','défier','compétition','jaloux','jalousie','surpasser','dépasser','rival'] },
-  manip:   { label:'Manip.',     color:'#c084fc', dash:'2 5',   width:1.0, anim:'glitch',  glow:false, keywords:['manipuler','tromper','mentir','piège','complot','dissimuler','cacher','faux','masque','conspirer'] },
-  traitor: { label:'Trahison',   color:'#f87171', dash:'6 2 1 2', width:1.5, anim:'glitch', glow:false, keywords:['trahir','trahison','traître','abandonner','déserter','vengeance','rancœur','double-jeu'] },
-  secret:  { label:'Secret',     color:'#818cf8', dash:'1 6',   width:1.0, anim:'breathe', glow:false, keywords:['secret','cacher','révéler','dissimuler','ombre','mystère','cache','inconnu','vérité'] },
-};
-
-function detectRelationBetween(charA, charB, chapData) {
-  // Cherche dans les chapitres où les deux personnages apparaissent ensemble
-  const sharedChaps = chapData.filter(ch =>
-    ch.chars.includes(charA.name) && ch.chars.includes(charB.name)
-  );
-  if (!sharedChaps.length) return null;
-
-  const combinedText = sharedChaps.map(c => c.text + ' ' + c.notes).join(' ').toLowerCase();
-  const scores = {};
-  let bestType = null, bestScore = 0;
-
-  Object.entries(REL_TYPES).forEach(([type, def]) => {
-    let score = 0;
-    def.keywords.forEach(kw => {
-      const regex = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
-      score += (combinedText.match(regex)||[]).length;
-    });
-    scores[type] = score;
-    if (score > bestScore) { bestScore = score; bestType = type; }
-  });
-
-  if (bestScore < 1) {
-    // Relation neutre (co-présence seulement)
-    return { type:'co', label:'Co-présence', color:'rgba(255,255,255,.2)', dash:'2 6', width:0.6, anim:'none', sharedChaps:sharedChaps.length, score:sharedChaps.length };
-  }
-  return { ...REL_TYPES[bestType], type:bestType, sharedChaps:sharedChaps.length, score:bestScore };
-}
-
 // ── Analyse du texte d'un livre ─────────────────────────────────────────────
 
 function analyzeBook(bk) {
   const chapters = bk.chapters || [];
   const registeredChars = bk.characters || [];
 
-  const knownNames = new Map();
+  // 1. Construire un set de noms connus (personnages enregistrés)
+  const knownNames = new Map(); // lowercase → {id, name, role, desc}
   registeredChars.forEach(c => knownNames.set(c.name.toLowerCase(), c));
 
+  // 2. Pour chaque chapitre, trouver les personnages enregistrés mentionnés
   const globalOccurrences = new Map();
   const chapData = chapters.map((ch, idx) => {
     const fullText = (ch.text || '') + ' ' + (ch.notes || '');
@@ -967,12 +993,14 @@ function analyzeBook(bk) {
     knownNames.forEach((c, key) => {
       if (fullLower.includes(key)) {
         foundChars.add(c.name);
+        // Compter les occurrences globales
         const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
         const count = (fullText.match(regex) || []).length;
         globalOccurrences.set(c.name, (globalOccurrences.get(c.name) || 0) + count);
       }
     });
 
+    // Détection des thèmes/intrigues dans ce chapitre
     const themesFound = [];
     PLOT_THEMES.forEach((theme, ti) => {
       let score = 0;
@@ -981,24 +1009,20 @@ function analyzeBook(bk) {
     });
     themesFound.sort((a,b) => b.score - a.score);
 
-    // Intensité émotionnelle du chapitre (pour calibrer les arêtes)
-    let emotionalScore = 0;
-    const emoKeywords = ['cœur','larme','cri','colère','peur','tremble','pleur','joie','rire','douleur','souffr','désespoir','espoir','amour','haine','trahis'];
-    emoKeywords.forEach(kw => { if (fullLower.includes(kw)) emotionalScore++; });
-
     return {
-      id: ch.id, idx,
+      id: ch.id,
+      idx,
       title: ch.title,
       text: ch.text || '',
       notes: ch.notes || '',
       wordCount: cw(ch.text || ''),
       chars: [...foundChars],
-      themes: themesFound.slice(0, 3),
-      emotionalScore,
+      themes: themesFound.slice(0, 3), // max 3 thèmes par chapitre
     };
   });
 
-  const plotMap = new Map();
+  // 3. Construire les intrigues : regrouper les chapitres par thème dominant
+  const plotMap = new Map(); // themeIdx → {chapters:[], chars:Set}
   chapData.forEach(ch => {
     ch.themes.forEach(({ themeIdx, score }) => {
       if (!plotMap.has(themeIdx)) plotMap.set(themeIdx, { chapters:[], chars:new Set(), score:0 });
@@ -1009,6 +1033,7 @@ function analyzeBook(bk) {
     });
   });
 
+  // Ne garder que les intrigues avec au moins 1 chapitre, trier par score
   const plots = [];
   plotMap.forEach((data, themeIdx) => {
     if (data.chapters.length >= 1) {
@@ -1026,134 +1051,15 @@ function analyzeBook(bk) {
   });
   plots.sort((a,b) => b.score - a.score);
 
+  // 4. Consolider la liste finale des personnages (enregistrés uniquement)
   const allChars = registeredChars.map(c => {
     const chapCount = chapData.filter(ch => ch.chars.includes(c.name)).length;
     const occurrences = globalOccurrences.get(c.name) || 0;
-    // Détecter les relations avec les autres personnages
-    const relations = {};
-    registeredChars.forEach(other => {
-      if (other.id === c.id) return;
-      const rel = detectRelationBetween(c, other, chapData);
-      if (rel) relations[other.name] = rel;
-    });
-    // Trouver la relation dominante pour afficher le badge
-    let domRelType = null, domRelScore = 0;
-    Object.entries(relations).forEach(([name, rel]) => {
-      if (rel.score > domRelScore && rel.type !== 'co') { domRelScore = rel.score; domRelType = rel.type; }
-    });
-    return {
-      name: c.name, role: c.role||'', desc: c.desc||'',
-      chapCount, isRegistered:true, occurrences,
-      relations, domRelType,
-    };
+    return { name: c.name, role: c.role || '', desc: c.desc || '', chapCount, isRegistered: true, occurrences };
   }).sort((a,b) => b.chapCount - a.chapCount || b.occurrences - a.occurrences);
 
-  // ── Détection des incohérences ───────────────────────────────────────────
-  const anomalies = detectAnomalies(chapData, allChars, plots, bk);
-
-  return { chapData, plots, allChars, anomalies };
+  return { chapData, plots, allChars };
 }
-
-// ── Détecteur d'incohérences narratives ──────────────────────────────────────
-function detectAnomalies(chapData, allChars, plots, bk) {
-  const issues = [];
-  const total = chapData.length;
-  if (total < 2) return issues;
-
-  // 1. Personnage absent depuis longtemps
-  allChars.forEach(ch => {
-    const appearances = chapData.map((c,i) => c.chars.includes(ch.name) ? i : -1).filter(i=>i>=0);
-    if (!appearances.length) return;
-    const lastSeen = appearances[appearances.length-1];
-    const gap = total - 1 - lastSeen;
-    if (gap >= 3 && total >= 4) {
-      issues.push({
-        type:'warn', icon:'👤',
-        label:`${ch.name} — absent depuis ${gap} chapitres`,
-        desc:`Dernière apparition : chapitre ${lastSeen+1}. Personnage oublié ou fil en suspens ?`,
-        badge:'Personnage',
-        chapIdx: lastSeen,
-      });
-    }
-  });
-
-  // 2. Intrigue abandonnée (démarrée mais absente des derniers chapitres)
-  plots.forEach(pl => {
-    const chapIndices = chapData.map((c,i) => pl.chapters.includes(c.id) ? i : -1).filter(i=>i>=0);
-    if (!chapIndices.length) return;
-    const lastChap = chapIndices[chapIndices.length-1];
-    const gap = total - 1 - lastChap;
-    if (gap >= 3 && chapIndices.length >= 2) {
-      issues.push({
-        type:'error', icon:pl.icon,
-        label:`Intrigue "${pl.name}" — inactive depuis ${gap} chap.`,
-        desc:`Cette ligne narrative semble abandonnée après le chapitre ${lastChap+1}.`,
-        badge:'Intrigue',
-        chapIdx: lastChap,
-      });
-    }
-  });
-
-  // 3. Chapitre très court (< 100 mots) au milieu du livre
-  chapData.forEach((ch, i) => {
-    if (i === 0 || i === total-1) return;
-    if (ch.wordCount > 0 && ch.wordCount < 100) {
-      issues.push({
-        type:'warn', icon:'📄',
-        label:`Chapitre ${i+1} "${ch.title||'Sans titre'}" — très court`,
-        desc:`Seulement ${ch.wordCount} mots. Brouillon ou chapitre de transition ?`,
-        badge:'Longueur',
-        chapIdx: i,
-      });
-    }
-  });
-
-  // 4. Personnage sans rôle défini
-  allChars.forEach(ch => {
-    if (!ch.role || ch.role === '') {
-      issues.push({
-        type:'warn', icon:'❓',
-        label:`${ch.name} — rôle non défini`,
-        desc:`Ce personnage n'a pas de rôle narratif défini. Ajoute-le pour enrichir la toile.`,
-        badge:'Fiche',
-        chapIdx: -1,
-      });
-    }
-  });
-
-  // 5. Personnage présent partout sans intrigue associée
-  allChars.forEach(ch => {
-    if (ch.chapCount >= Math.ceil(total * 0.7)) {
-      const inPlot = plots.some(p => p.chars.includes(ch.name));
-      if (!inPlot) {
-        issues.push({
-          type:'warn', icon:'🌀',
-          label:`${ch.name} — omniprésent sans intrigue`,
-          desc:`Apparaît dans ${ch.chapCount} chapitres mais n'est lié à aucun fil narratif détecté.`,
-          badge:'Structure',
-          chapIdx: -1,
-        });
-      }
-    }
-  });
-
-  // 6. Changement brutal de rythme (double du nombre de mots d'un chapitre à l'autre)
-  for (let i=1; i<chapData.length; i++) {
-    const prev = chapData[i-1].wordCount, curr = chapData[i].wordCount;
-    if (prev > 0 && curr > 0 && (curr / prev > 4 || prev / curr > 4)) {
-      issues.push({
-        type:'warn', icon:'📊',
-        label:`Rupture de rythme entre chap. ${i} et ${i+1}`,
-        desc:`${prev} mots → ${curr} mots. Transition brutale dans la densité narrative.`,
-        badge:'Rythme',
-        chapIdx: i,
-      });
-    }
-  }
-
-  return issues;
-}
-
 
 // ── Ouvrir / Fermer ──────────────────────────────────────────────────────────
 
@@ -1258,25 +1164,13 @@ function buildWeb() {
   empty.style.display='none';
 
   // ── Analyse du livre ──
-  const { chapData, plots, allChars, anomalies } = analyzeBook(bk);
+  const { chapData, plots, allChars } = analyzeBook(bk);
 
   // Mise à jour stats
   document.getElementById('cs-chaps').textContent = chapters.length;
   document.getElementById('cs-chars').textContent = allChars.length;
   document.getElementById('cs-plots').textContent = plots.length;
   document.getElementById('cs-words').textContent = totalWords(bk).toLocaleString('fr-FR');
-
-  // Anomalies badge
-  const anomalyCount = anomalies.length;
-  const abadge = document.getElementById('anomaly-badge-count');
-  if (anomalyCount > 0) {
-    abadge.textContent = anomalyCount; abadge.style.display='flex';
-    document.getElementById('cst-anomaly-btn').style.borderColor='rgba(239,68,68,.5)';
-  } else {
-    abadge.style.display='none';
-    document.getElementById('cst-anomaly-btn').style.borderColor='';
-  }
-  renderAnomalies(anomalies, bk);
 
   const W = window.innerWidth - 52;
   const H = window.innerHeight - 52;
@@ -1381,17 +1275,10 @@ function buildWeb() {
     if (inPlot) node.classList.add('in-plot');
     node.style.setProperty('--char-color', color);
     node.style.setProperty('--char-glow', color+'40');
-    // Badge de relation dominante
-    let relBadge = '';
-    if (ch.domRelType && REL_TYPES[ch.domRelType]) {
-      const rt = REL_TYPES[ch.domRelType];
-      relBadge = `<div class="cn-char-rel rel-${ch.domRelType}">${rt.label}</div>`;
-    }
     node.innerHTML=`<div class="cn-char-inner">
       <div class="cn-char-name">${ch.name}</div>
       ${ch.role?`<div class="cn-char-role">${ch.role}</div>`:''}
       <div class="cn-char-count">${ch.chapCount} chap.</div>
-      ${relBadge}
     </div>`;
     node.addEventListener('mousedown', makeDragHandler(nid, node, ()=>onClickChar(ch, i, color, chapData, plots)));
     canvas.appendChild(node);
@@ -1402,73 +1289,367 @@ function buildWeb() {
   applyFilter();
 }
 
-// ── Dessiner les arêtes ───────────────────────────────────────────────────────
-function drawEdges(chapData, plots, allChars, bk) {
-  const svg = document.getElementById('cst-svg');
-  svg.innerHTML='';
-  const bkId = bk.id;
+// ── Dessiner les arêtes ANIMÉES ─────────────────────────────────────────────
 
-  // Chapitres → Centre (rayons légers)
+// Définitions des types de relations avec couleurs, styles, effets
+const REL_TYPES = {
+  love:        { color:'#f9a8d4', dash:'none',   width:2,   effect:'pulse',  label:'Amour' },
+  betrayal:    { color:'#ef4444', dash:'5 3',    width:2.5, effect:'glitch', label:'Trahison' },
+  secret:      { color:'#a855f7', dash:'2 4',    width:1.5, effect:'glitch', label:'Secret' },
+  alliance:    { color:'#34d399', dash:'none',   width:2,   effect:'flow',   label:'Alliance' },
+  rivalry:     { color:'#fb923c', dash:'6 2',    width:2,   effect:'breathe',label:'Rivalité' },
+  mentor:      { color:'#38bdf8', dash:'none',   width:1.5, effect:'flow',   label:'Mentor' },
+  manipulation:{ color:'#c084fc', dash:'3 6',    width:1.5, effect:'glitch', label:'Manipulation' },
+  enemy:       { color:'#f43f5e', dash:'none',   width:3,   effect:'pulse',  label:'Ennemi' },
+  neutral:     { color:'#f59e0b', dash:'none',   width:1,   effect:'breathe',label:'Lien' },
+};
+
+// Mots-clés pour détecter le TYPE de relation entre personnages dans le texte
+const REL_KEYWORDS = {
+  love:        ['amour','aimer','embrasser','baiser','cœur','désir','attirer','séduire','tendresse','passion','jalousie','amoureux','romance','chéri','enlacer','câlin','doux','douce'],
+  betrayal:    ['trahir','trahison','mentir','mensonge','poignarder','dos','décevoir','abandonner','lâcher','tromper','tromperie','complot','piège','faux','double','vendu'],
+  secret:      ['secret','chuchoter','cacher','dissimuler','murmurer','cachette','voix basse','entre nous','ne dis pas','confidentiel','personne ne sait','ombre','invisible'],
+  alliance:    ['allié','alliance','ensemble','équipe','pacte','soutien','aide','protéger','défendre','compagnon','frère','sœur','union','loyal','fidèle','serment','promesse'],
+  rivalry:     ['rival','rivalité','compétition','dépasser','challenger','battre','surpasser','jaloux','jalousie','concurrence','adversaire'],
+  mentor:      ['apprendre','enseigner','guide','mentor','maître','élève','transmettre','former','protéger','conseiller','sagesse','expérience','leçon','montrer'],
+  manipulation:['manipuler','manipulation','contrôler','influencer','pression','forcer','obliger','convaincre de force','sous emprise','dominer','soumettre','obéir'],
+  enemy:       ['ennemi','haïr','haine','détester','tuer','assassiner','anéantir','détruire','affronter','combattre','guerre','meurtre','mort'],
+};
+
+// Détecter le type de relation dominant entre deux personnages dans le contexte du livre
+function detectRelationType(charA, charB, chapData) {
+  const scores = {};
+  Object.keys(REL_KEYWORDS).forEach(t => scores[t] = 0);
+
   chapData.forEach(ch => {
-    const p = cstPos['chap_'+ch.id];
-    const cx2 = window.innerWidth/2-26, cy2 = window.innerHeight/2-26;
-    if (p) svgLine(svg, p, {x:cx2,y:cy2}, '#f59e0b', 0.6, 'none', 0.12, 'edge-chap');
-  });
-
-  // Chapitres adjacents liés entre eux (fil narratif)
-  for (let i=0;i<chapData.length-1;i++){
-    const a=cstPos['chap_'+chapData[i].id], b=cstPos['chap_'+chapData[i+1].id];
-    if (a&&b) svgLine(svg, a, b, '#f59e0b', 1, 'none', 0.25, 'edge-chap');
-  }
-  // Boucler le dernier au premier si 3+ chapitres
-  if (chapData.length>=3){
-    const a=cstPos['chap_'+chapData[chapData.length-1].id], b=cstPos['chap_'+chapData[0].id];
-    if (a&&b) svgLine(svg, a, b, '#f59e0b', 0.8, '4 4', 0.15, 'edge-chap');
-  }
-
-  // Chapitres → Intrigues qu'ils portent
-  chapData.forEach(ch => {
-    const cp = cstPos['chap_'+ch.id]; if (!cp) return;
-    ch.themes.slice(0,2).forEach(({themeIdx}) => {
-      const pl = plots.find(p=>p.themeIdx===themeIdx); if (!pl) return;
-      const pp = cstPos[pl.id]; if (!pp) return;
-      const color = PLOT_COLORS[plots.indexOf(pl) % PLOT_COLORS.length];
-      svgLine(svg, cp, pp, color, 0.9, 'none', 0.28, 'edge-cross');
+    if (!ch.chars.includes(charA) || !ch.chars.includes(charB)) return;
+    const txt = (ch.text + ' ' + ch.notes).toLowerCase();
+    Object.entries(REL_KEYWORDS).forEach(([type, kws]) => {
+      kws.forEach(kw => {
+        if (txt.includes(kw)) scores[type] += 1;
+      });
     });
   });
 
-  // Intrigues partagées entre elles (personnages communs)
+  // Trouver le type dominant
+  let best = 'neutral', bestScore = 0;
+  Object.entries(scores).forEach(([t,s]) => { if (s > bestScore) { bestScore=s; best=t; } });
+  return { type: best, score: bestScore, allScores: scores };
+}
+
+// Calculer le nombre de scènes partagées entre deux entités
+function sharedScenes(chapData, charA, charB) {
+  return chapData.filter(ch => ch.chars.includes(charA) && ch.chars.includes(charB)).length;
+}
+
+// ── ASSISTANT NARRATIF : Détection des incohérences ──────────────────────────
+function detectNarrativeInconsistencies(bk, chapData, allChars, plots) {
+  const alerts = [];
+  const totalChaps = chapData.length;
+
+  // 1. Personnages absents depuis trop longtemps (> 40% de la longueur du livre)
+  allChars.forEach(char => {
+    if (char.chapCount === 0) return;
+    const lastChapIdx = chapData.reduce((last, ch, idx) => ch.chars.includes(char.name) ? idx : last, -1);
+    const firstChapIdx = chapData.findIndex(ch => ch.chars.includes(char.name));
+    if (lastChapIdx >= 0 && totalChaps > 3) {
+      const chapsSinceLastMention = totalChaps - 1 - lastChapIdx;
+      const threshold = Math.max(3, Math.floor(totalChaps * 0.4));
+      if (chapsSinceLastMention >= threshold && lastChapIdx < totalChaps - 1) {
+        alerts.push({
+          type: 'absence',
+          severity: 'warning',
+          color: '#fb923c',
+          icon: '👤',
+          msg: `"${char.name}" absent·e depuis ${chapsSinceLastMention} chapitre(s)`,
+          detail: `Dernière apparition : Chap. ${lastChapIdx + 1}. Fil narratif potentiellement abandonné ?`,
+        });
+      }
+    }
+  });
+
+  // 2. Intrigues abandonnées (démarrée puis plus de mention pendant 3+ chapitres)
+  plots.forEach(pl => {
+    if (pl.chapters.length < 2) return;
+    // Trouver les indices des chapitres de cette intrigue
+    const chIndices = pl.chapters.map(cid => chapData.findIndex(c => c.id === cid)).filter(i => i >= 0).sort((a,b)=>a-b);
+    if (chIndices.length < 2) return;
+    const lastIdx = chIndices[chIndices.length - 1];
+    const chapsSince = totalChaps - 1 - lastIdx;
+    if (chapsSince >= 3 && totalChaps > 5) {
+      // Vérifier s'il y a un gap important
+      const maxGap = chIndices.reduce((g,idx,i) => i===0?g:Math.max(g,chIndices[i]-chIndices[i-1]), 0);
+      if (maxGap >= 3) {
+        alerts.push({
+          type: 'plot_gap',
+          severity: 'info',
+          color: '#a855f7',
+          icon: '🔍',
+          msg: `Intrigue "${pl.name}" : gap de ${maxGap} chap. détecté`,
+          detail: `Cette intrigue disparaît puis réapparaît. Vérifier la cohérence du fil.`,
+        });
+      }
+      if (chapsSince >= 4) {
+        alerts.push({
+          type: 'plot_abandoned',
+          severity: 'warning',
+          color: '#f43f5e',
+          icon: '🗡️',
+          msg: `Intrigue "${pl.name}" ${pl.icon} semble abandonnée`,
+          detail: `Plus mentionnée depuis ${chapsSince} chapitres (dernier : Chap. ${lastIdx + 1}).`,
+        });
+      }
+    }
+  });
+
+  // 3. Personnage très présent puis qui disparaît brutalement (> 5 chaps sans mention)
+  allChars.forEach(char => {
+    if (char.chapCount < 2) return;
+    const appearances = chapData.map((ch,i) => ({i, present: ch.chars.includes(char.name)}));
+    const firstHalf = appearances.slice(0, Math.floor(totalChaps/2));
+    const secondHalf = appearances.slice(Math.floor(totalChaps/2));
+    const firstCount = firstHalf.filter(x=>x.present).length;
+    const secondCount = secondHalf.filter(x=>x.present).length;
+    if (firstCount >= 3 && secondCount === 0 && totalChaps >= 6) {
+      alerts.push({
+        type: 'char_disappear',
+        severity: 'error',
+        color: '#ef4444',
+        icon: '⚠',
+        msg: `"${char.name}" disparaît dans la 2e moitié du livre`,
+        detail: `Présent·e dans ${firstCount} chap. de la 1ère moitié, puis absent·e. Coupure narrative brutale ?`,
+      });
+    }
+  });
+
+  // 4. Chapitres très courts isolés entre chapitres longs (déséquilibre narratif)
+  if (totalChaps >= 4) {
+    const avgWords = chapData.reduce((s,c)=>s+c.wordCount,0) / totalChaps;
+    chapData.forEach((ch, i) => {
+      if (i === 0 || i === totalChaps-1) return;
+      const prev = chapData[i-1].wordCount, next = chapData[i+1].wordCount;
+      if (ch.wordCount < avgWords * 0.2 && prev > avgWords * 0.7 && next > avgWords * 0.7) {
+        alerts.push({
+          type: 'short_chapter',
+          severity: 'info',
+          color: '#38bdf8',
+          icon: '📄',
+          msg: `Chap. ${i+1} "${ch.title||'Sans titre'}" anormalement court`,
+          detail: `${ch.wordCount} mots vs moyenne ${Math.round(avgWords)} mots. Chapitre vide ou en cours d'écriture ?`,
+        });
+      }
+    });
+  }
+
+  // 5. Personnages jamais liés à aucune intrigue
+  const charsWithNoPlot = allChars.filter(c => !plots.some(p => p.chars.includes(c.name)));
+  charsWithNoPlot.forEach(char => {
+    if (char.chapCount >= 2) {
+      alerts.push({
+        type: 'char_no_plot',
+        severity: 'info',
+        color: '#facc15',
+        icon: '✦',
+        msg: `"${char.name}" sans intrigue détectée`,
+        detail: `Ce personnage apparaît dans ${char.chapCount} chap. mais n'est lié à aucun fil narratif détecté.`,
+      });
+    }
+  });
+
+  // 6. Trop de personnages dans un seul chapitre (surcharge)
+  chapData.forEach((ch, i) => {
+    if (ch.chars.length >= 5) {
+      alerts.push({
+        type: 'overcrowded',
+        severity: 'info',
+        color: '#c084fc',
+        icon: '👥',
+        msg: `Chap. ${i+1} surpeuplé (${ch.chars.length} personnages)`,
+        detail: `"${ch.title||'Sans titre'}" : ${ch.chars.join(', ')}. Lisibilité à vérifier.`,
+      });
+    }
+  });
+
+  return alerts;
+}
+
+function renderAlertsPanel(alerts) {
+  const body = document.getElementById('cst-alerts-body');
+  const badge = document.getElementById('cst-alerts-badge');
+  const countEl = document.getElementById('cst-alert-count');
+  const btn = document.getElementById('cst-alert-toggle');
+
+  const count = alerts.length;
+  badge.textContent = count;
+  if (count > 0) {
+    countEl.textContent = count;
+    countEl.style.display = 'inline';
+    btn.classList.add('has-alerts');
+  } else {
+    countEl.style.display = 'none';
+    btn.classList.remove('has-alerts');
+  }
+
+  if (!count) {
+    body.innerHTML = '<div class="cst-no-alerts"><span class="icon">✦</span>Aucune incohérence détectée.<br>Ta narration est cohérente !</div>';
+    return;
+  }
+
+  body.innerHTML = alerts.map(a => `
+    <div class="cst-alert-item" style="--alert-color:${a.color}">
+      <div class="cst-alert-type">${a.icon} ${a.type.replace('_',' ')}</div>
+      <div class="cst-alert-msg">${a.msg}</div>
+      <div class="cst-alert-detail">${a.detail}</div>
+    </div>
+  `).join('');
+}
+
+function toggleAlertsPanel() {
+  const panel = document.getElementById('cst-alerts-panel');
+  panel.classList.toggle('open');
+  // Fermer le détail si ouvert
+  if (panel.classList.contains('open')) closeDetail();
+}
+
+function drawEdges(chapData, plots, allChars, bk) {
+  const svg = document.getElementById('cst-svg');
+  svg.innerHTML='';
+
+  // Ajouter les defs SVG pour les dégradés, filtres et marqueurs
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `
+    <filter id="glow-pink" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-violet" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  const cx2 = window.innerWidth/2-26, cy2 = window.innerHeight/2-26;
+
+  // Chapitres → Centre (rayons légers + pulsations)
+  chapData.forEach((ch, idx) => {
+    const p = cstPos['chap_'+ch.id];
+    if (!p) return;
+    const intensity = Math.min(1, ch.wordCount / 2000);
+    svgAnimLine(svg, p, {x:cx2,y:cy2}, '#f59e0b', 0.5+intensity*0.5, 'none', 0.08+intensity*0.08, 'edge-chap', 'breathe', 3+idx%3);
+  });
+
+  // Chapitres adjacents (fil narratif animé)
+  for (let i=0;i<chapData.length-1;i++){
+    const a=cstPos['chap_'+chapData[i].id], b=cstPos['chap_'+chapData[i+1].id];
+    if (!a||!b) continue;
+    const sharedCount = chapData[i].chars.filter(c => chapData[i+1].chars.includes(c)).length;
+    const intensity = Math.min(1, sharedCount / 3);
+    svgAnimLine(svg, a, b, '#f59e0b', 1+intensity, 'none', 0.2+intensity*0.4, 'edge-chap', intensity>0.5?'pulse':'breathe', 2);
+    // Particules si fort lien
+    if (sharedCount >= 2) addParticle(svg, a, b, '#f59e0b', 2.5);
+  }
+  if (chapData.length>=3){
+    const a=cstPos['chap_'+chapData[chapData.length-1].id], b=cstPos['chap_'+chapData[0].id];
+    if (a&&b) svgAnimLine(svg, a, b, '#f59e0b', 0.8, '4 4', 0.12, 'edge-chap', 'breathe', 4);
+  }
+
+  // Chapitres → Intrigues (lignes colorées selon thème)
+  chapData.forEach(ch => {
+    const cp = cstPos['chap_'+ch.id]; if (!cp) return;
+    ch.themes.slice(0,2).forEach(({themeIdx, score}) => {
+      const pl = plots.find(p=>p.themeIdx===themeIdx); if (!pl) return;
+      const pp = cstPos[pl.id]; if (!pp) return;
+      const color = PLOT_COLORS[plots.indexOf(pl) % PLOT_COLORS.length];
+      const intensity = Math.min(1, score / 5);
+      svgAnimLine(svg, cp, pp, color, 0.8+intensity*0.8, 'none', 0.2+intensity*0.2, 'edge-cross', intensity>0.6?'flow':'breathe', 3);
+      if (intensity > 0.7) addParticle(svg, cp, pp, color, 2);
+    });
+  });
+
+  // Relations entre personnages (MODIFICATION 1+2 : liens sémantiques animés)
+  const processedPairs = new Set();
+  allChars.forEach((charA, ia) => {
+    allChars.forEach((charB, ib) => {
+      if (ib <= ia) return;
+      const pairKey = [charA.name, charB.name].sort().join('||');
+      if (processedPairs.has(pairKey)) return;
+      processedPairs.add(pairKey);
+
+      const scenes = sharedScenes(chapData, charA.name, charB.name);
+      if (scenes === 0) return;
+
+      const nidA = 'char_'+charA.name.replace(/\s+/g,'_');
+      const nidB = 'char_'+charB.name.replace(/\s+/g,'_');
+      const pA = cstPos[nidA], pB = cstPos[nidB];
+      if (!pA || !pB) return;
+
+      const { type, score } = detectRelationType(charA.name, charB.name, chapData);
+      const relDef = REL_TYPES[type] || REL_TYPES.neutral;
+      const intensity = Math.min(1, scenes / 5);
+      const sw = relDef.width * (0.5 + intensity * 0.8);
+      const opacity = 0.25 + intensity * 0.55;
+
+      // Effet selon type de relation
+      let filter = '';
+      if (type === 'love') filter = 'url(#glow-pink)';
+      else if (type === 'betrayal' || type === 'enemy') filter = 'url(#glow-red)';
+      else if (type === 'secret' || type === 'manipulation') filter = 'url(#glow-violet)';
+
+      svgRelCurve(svg, pA, pB, relDef.color, sw, relDef.dash, opacity, relDef.label, 'edge-char', relDef.effect, charA.name+'-'+charB.name, filter, scenes, intensity);
+
+      // Particules pour les liens forts
+      if (intensity >= 0.6 || scenes >= 3) {
+        addParticle(svg, pA, pB, relDef.color, 1.5);
+      }
+    });
+  });
+
+  // Intrigues partagées (personnages communs)
   for (let i=0;i<plots.length;i++){
     for (let j=i+1;j<plots.length;j++){
       const shared = plots[i].chars.filter(c=>plots[j].chars.includes(c));
       if (shared.length>0){
         const a=cstPos[plots[i].id], b=cstPos[plots[j].id];
-        if (a&&b) svgCurve(svg, a, b, '#f472b6', 1, '3 5', 0.45, shared[0], 'edge-plot');
+        if (a&&b) svgAnimCurve(svg, a, b, '#f472b6', 1.2, '3 5', 0.4, shared[0], 'edge-plot', 'pulse', 2.5);
       }
     }
   }
 
-  // Personnages → Intrigues où ils apparaissent
+  // Personnages → Intrigues
   allChars.forEach((ch,i) => {
     const nid='char_'+ch.name.replace(/\s+/g,'_');
     const cp=cstPos[nid]; if (!cp) return;
     const color=CHAR_COLORS[i%CHAR_COLORS.length];
-    plots.forEach((pl,pi) => {
+    const chap_occ = chapData.filter(c=>c.chars.includes(ch.name)).length;
+    plots.forEach((pl) => {
       if (pl.chars.includes(ch.name)){
         const pp=cstPos[pl.id]; if (!pp) return;
-        svgLine(svg, cp, pp, color, 0.7, '2 4', 0.3, 'edge-char');
+        const intensity = Math.min(1, chap_occ / 5);
+        svgAnimLine(svg, cp, pp, color, 0.6+intensity*0.6, '2 4', 0.2+intensity*0.2, 'edge-char', 'breathe', 3+i%2);
       }
     });
-    // Aussi lier personnage → chapitres où il est mentionné (très léger)
-    const chapNids = chapData.filter(c=>c.chars.includes(ch.name)).map(c=>'chap_'+c.id);
-    chapNids.slice(0,3).forEach(cnid=>{
-      const chP=cstPos[cnid]; if (!chP) return;
-      svgLine(svg, cp, chP, color, 0.5, '1 4', 0.15, 'edge-char');
-    });
+  });
+
+  // Nœuds fortement liés → classe pour animation
+  allChars.forEach(char => {
+    const nid = 'char_'+char.name.replace(/\s+/g,'_');
+    const el = document.querySelector(`[data-nid="${nid}"]`);
+    if (el && char.chapCount >= 3) el.classList.add('strongly-linked');
+  });
+  chapData.forEach((ch, i) => {
+    const nid = 'chap_'+ch.id;
+    const el = document.querySelector(`[data-nid="${nid}"]`);
+    if (el && ch.chars.length >= 2) el.classList.add('strongly-linked');
   });
 }
 
-function svgLine(svg, a, b, color, sw, dash, opacity, cls) {
+let _edgeIdCounter = 0;
+function svgAnimLine(svg, a, b, color, sw, dash, opacity, cls, effect, duration) {
   const el=document.createElementNS('http://www.w3.org/2000/svg','line');
   el.setAttribute('x1',a.x);el.setAttribute('y1',a.y);
   el.setAttribute('x2',b.x);el.setAttribute('y2',b.y);
@@ -1476,20 +1657,80 @@ function svgLine(svg, a, b, color, sw, dash, opacity, cls) {
   if (dash!=='none') el.setAttribute('stroke-dasharray',dash);
   el.setAttribute('opacity',opacity);el.setAttribute('fill','none');
   if (cls) el.setAttribute('class',cls);
+
+  if (effect==='pulse') {
+    el.style.animation=`edge-pulse ${duration||2}s ease-in-out infinite`;
+  } else if (effect==='breathe') {
+    el.style.animation=`edge-breathe ${duration||3}s ease-in-out infinite`;
+  } else if (effect==='flow') {
+    el.setAttribute('stroke-dasharray', '8 6');
+    el.style.animation=`edge-flow ${duration||2}s linear infinite`;
+  }
   svg.appendChild(el);
+  return el;
 }
 
-function svgCurve(svg, a, b, color, sw, dash, opacity, label, cls) {
+function svgRelCurve(svg, a, b, color, sw, dash, opacity, label, cls, effect, id, filter, scenes, intensity) {
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  const dx=b.x-a.x, dy=b.y-a.y;
+  const nx=-dy*.22, ny=dx*.22;
+  const pid = 'rpath_'+(++_edgeIdCounter);
+
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('id', pid);
+  path.setAttribute('d',`M${a.x},${a.y} Q${mx+nx},${my+ny} ${b.x},${b.y}`);
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke',color);
+  path.setAttribute('stroke-width',sw);
+  if (dash!=='none') path.setAttribute('stroke-dasharray',dash);
+  path.setAttribute('opacity',opacity);
+  if (cls) path.setAttribute('class',cls);
+  if (filter) path.setAttribute('filter',filter);
+
+  if (effect==='pulse') {
+    path.style.animation=`edge-pulse ${2+Math.random()}s ease-in-out infinite`;
+  } else if (effect==='glitch') {
+    path.style.animation=`edge-glitch ${3+Math.random()*2}s step-end infinite`;
+  } else if (effect==='flow') {
+    path.setAttribute('stroke-dasharray','10 6');
+    path.style.animation=`edge-flow ${2.5}s linear infinite`;
+  } else if (effect==='breathe') {
+    path.style.animation=`edge-breathe ${2.5+Math.random()*1.5}s ease-in-out infinite`;
+  }
+  svg.appendChild(path);
+
+  // Label relation si intensité suffisante
+  if (label && intensity >= 0.4 && scenes >= 2) {
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','textPath');
+    txt.setAttribute('href','#'+pid);
+    txt.setAttribute('startOffset','50%');
+    txt.textContent = label;
+    const textEl = document.createElementNS('http://www.w3.org/2000/svg','text');
+    textEl.setAttribute('text-anchor','middle');
+    textEl.setAttribute('font-family','Syne,sans-serif');
+    textEl.setAttribute('font-size','8');
+    textEl.setAttribute('fill',color);
+    textEl.setAttribute('opacity','0.7');
+    textEl.appendChild(txt);
+    svg.appendChild(textEl);
+  }
+}
+
+function svgAnimCurve(svg, a, b, color, sw, dash, opacity, label, cls, effect, duration) {
   const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
   const dx=b.x-a.x,dy=b.y-a.y;
   const nx=-dy*.18,ny=dx*.18;
+  const pid='apath_'+(++_edgeIdCounter);
   const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('id',pid);
   path.setAttribute('d',`M${a.x},${a.y} Q${mx+nx},${my+ny} ${b.x},${b.y}`);
   path.setAttribute('fill','none');path.setAttribute('stroke',color);
   path.setAttribute('stroke-width',sw);
   if (dash!=='none') path.setAttribute('stroke-dasharray',dash);
   path.setAttribute('opacity',opacity);
   if (cls) path.setAttribute('class',cls);
+  if (effect==='pulse') path.style.animation=`edge-pulse ${duration||2}s ease-in-out infinite`;
+  else if (effect==='breathe') path.style.animation=`edge-breathe ${duration||3}s ease-in-out infinite`;
   svg.appendChild(path);
   if (label){
     const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
@@ -1499,6 +1740,43 @@ function svgCurve(svg, a, b, color, sw, dash, opacity, label, cls) {
     txt.setAttribute('fill',color);txt.setAttribute('opacity','0.6');
     txt.textContent=label; svg.appendChild(txt);
   }
+}
+
+// Ajouter un point de particule animé sur un chemin
+function addParticle(svg, a, b, color, size) {
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  const dx=b.x-a.x, dy=b.y-a.y;
+  const nx=-dy*.18, ny=dx*.18;
+  const pid='ppath_'+(++_edgeIdCounter);
+
+  // Chemin pour motionPath
+  const pathGuide=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathGuide.setAttribute('id',pid);
+  pathGuide.setAttribute('d',`M${a.x},${a.y} Q${mx+nx},${my+ny} ${b.x},${b.y}`);
+  pathGuide.setAttribute('fill','none');pathGuide.setAttribute('stroke','none');
+  svg.appendChild(pathGuide);
+
+  // Plusieurs particules décalées dans le temps
+  [0, 0.33, 0.66].forEach((offset, i) => {
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('r', size * 0.8);
+    circle.setAttribute('fill', color);
+    circle.setAttribute('opacity','0');
+    const dur = 2.5 + Math.random()*1.5;
+    const delay = offset * dur;
+    circle.style.animation = `particle-flow ${dur}s ${delay}s linear infinite`;
+    circle.style.offsetPath = `path("M${a.x},${a.y} Q${mx+nx},${my+ny} ${b.x},${b.y}")`;
+    circle.style.offsetDistance = '0%';
+    svg.appendChild(circle);
+  });
+}
+
+function svgLine(svg, a, b, color, sw, dash, opacity, cls) {
+  svgAnimLine(svg, a, b, color, sw, dash, opacity, cls, 'breathe', 3);
+}
+
+function svgCurve(svg, a, b, color, sw, dash, opacity, label, cls) {
+  svgAnimCurve(svg, a, b, color, sw, dash, opacity, label, cls, 'breathe', 3);
 }
 
 // ── Clics sur les nœuds ──────────────────────────────────────────────────────
