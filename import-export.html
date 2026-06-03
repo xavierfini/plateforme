@@ -6,107 +6,174 @@
 <title>StudyHub — Import / Export</title>
 <link rel="stylesheet" href="shared.css">
 <style>
-.storage-banner { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
-.storage-banner-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+/* STORAGE BANNER */
+.storage-banner { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
+.storage-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
 .storage-title { font-family: 'Syne', sans-serif; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); }
-.storage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 14px; }
-.storage-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px; }
-.si-name { font-family: 'Syne', sans-serif; font-size: .68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
-.si-size { font-family: 'Clash Display', sans-serif; font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
-.si-count { font-family: 'Syne', sans-serif; font-size: .65rem; color: var(--text-muted); margin-top: 1px; }
-.storage-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.storage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 7px; margin-bottom: 14px; }
+.si { background: var(--surface2); border-radius: var(--radius-sm); padding: 9px 11px; }
+.si-name { font-family: 'Syne', sans-serif; font-size: .63rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.si-size { font-family: 'Clash Display', sans-serif; font-size: 1rem; font-weight: 700; margin-top: 2px; }
+.si-count { font-family: 'Syne', sans-serif; font-size: .6rem; color: var(--text-muted); margin-top: 1px; }
+.storage-bar { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
 .storage-bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--violet)); border-radius: 3px; transition: width .5s; }
-.storage-legend { display: flex; justify-content: space-between; font-family: 'Syne', sans-serif; font-size: .72rem; color: var(--text-muted); margin-top: 5px; }
+.storage-legend { display: flex; justify-content: space-between; font-family: 'Syne', sans-serif; font-size: .7rem; color: var(--text-muted); margin-top: 4px; }
 
-.ie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
-.ie-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: border-color .2s; }
-.ie-card:hover { border-color: rgba(0,229,255,.3); }
-.ie-card-full { grid-column: 1 / -1; }
-.ie-card-header { display: flex; align-items: center; gap: 12px; }
-.ie-icon { width: 42px; height: 42px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
-.ie-card-title { font-weight: 600; font-size: .95rem; }
-.ie-card-desc { font-family: 'Syne', sans-serif; font-size: .75rem; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
-.data-summary { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-family: 'Syne', sans-serif; font-size: .8rem; }
-.data-count { font-size: .72rem; background: var(--border); padding: 2px 8px; border-radius: 99px; color: var(--text-muted); }
-.ie-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.backup-preview { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-size: .72rem; font-family: 'Courier New', monospace; color: var(--text-muted); max-height: 120px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
-.danger-box { background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.2); border-radius: var(--radius-sm); padding: 12px 14px; font-family: 'Syne', sans-serif; font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+/* SECTION LABEL */
+.sect { font-family: 'Syne', sans-serif; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin: 28px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.sect:first-of-type { margin-top: 0; }
 
-.toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--green); border-radius: var(--radius); padding: 12px 18px; font-family: 'Syne', sans-serif; font-size: .85rem; display: flex; align-items: center; gap: 8px; z-index: 999; transform: translateY(80px); opacity: 0; transition: all .35s; box-shadow: 0 8px 32px rgba(0,0,0,.4); }
+/* GRID */
+.ie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-bottom: 4px; }
+.full { grid-column: 1/-1; }
+
+/* CARD */
+.ie-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: border-color .2s; }
+.ie-card:hover { border-color: rgba(0,229,255,.2); }
+.card-head { display: flex; align-items: center; gap: 12px; }
+.card-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.card-title { font-weight: 600; font-size: .92rem; }
+.card-desc { font-family: 'Syne', sans-serif; font-size: .72rem; color: var(--text-muted); margin-top: 2px; line-height: 1.45; }
+
+/* KEY ROWS */
+.key-rows { display: flex; flex-direction: column; gap: 4px; }
+.key-row { background: var(--surface2); border-radius: var(--radius-sm); padding: 7px 11px; display: flex; align-items: center; justify-content: space-between; font-family: 'Syne', sans-serif; font-size: .77rem; gap: 8px; }
+.key-row code { font-size: .66rem; background: var(--border); padding: 1px 6px; border-radius: 4px; color: var(--text-muted); font-family: 'Courier New', monospace; white-space: nowrap; }
+.key-badge { font-size: .66rem; background: var(--border); padding: 2px 8px; border-radius: 99px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+
+/* ACTIONS */
+.ie-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+/* BACKUP PREVIEW */
+.backup-preview { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px; font-size: .68rem; font-family: 'Courier New', monospace; color: var(--text-muted); max-height: 100px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
+
+/* DANGER */
+.danger-box { background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.2); border-radius: var(--radius-sm); padding: 10px 14px; font-family: 'Syne', sans-serif; font-size: .76rem; color: var(--text-muted); line-height: 1.5; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--green); border-radius: var(--radius); padding: 11px 16px; font-family: 'Syne', sans-serif; font-size: .83rem; display: flex; align-items: center; gap: 8px; z-index: 999; transform: translateY(80px); opacity: 0; transition: all .35s; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
 .toast.show { transform: translateY(0); opacity: 1; }
-.toast.error { border-color: var(--pink); }
+.toast.err { border-color: var(--pink); }
 </style>
 </head>
 <body>
 
+<!-- SIDEBAR -->
 <nav class="nav">
   <a class="nav-logo" href="index.html">S</a>
-  <a class="nav-link" href="index.html" title="Board"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nav-label">Board</span></a>
-  <a class="nav-link" href="agenda.html" title="Agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="nav-label">Agenda</span></a>
-  <a class="nav-link" href="tasks.html" title="Tâches"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="nav-label">Tâches</span></a>
-  <a class="nav-link" href="notes.html" title="Notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg><span class="nav-label">Notes</span></a>
-  <a class="nav-link" href="pomodoro.html" title="Pomodoro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="nav-label">Focus</span></a>
-  <a class="nav-link" href="carnet.html" title="Carnet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span class="nav-label">Carnet</span></a>
+  <a class="nav-link" href="index.html" title="Board">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-label">Board</span>
+  </a>
+  <a class="nav-link" href="agenda.html" title="Agenda">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span class="nav-label">Agenda</span>
+  </a>
+  <a class="nav-link" href="tasks.html" title="Tâches">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span class="nav-label">Tâches</span>
+  </a>
+  <a class="nav-link" href="notes.html" title="Notes & Matières">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span class="nav-label">Notes</span>
+  </a>
+  <a class="nav-link" href="pomodoro.html" title="Pomodoro">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span class="nav-label">Focus</span>
+  </a>
+  <a class="nav-link" href="carnet.html" title="Carnet de notes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    <span class="nav-label">Carnet</span>
+  </a>
   <div class="nav-divider"></div>
-  <a class="nav-link" href="projets.html" title="Projets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="8" width="6" height="13" rx="1"/><rect x="16" y="5" width="6" height="16" rx="1"/></svg><span class="nav-label">Projets</span></a>
-  <a class="nav-link" href="contacts-annuaire.html" title="Contacts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-label">Contacts</span></a>
-  <a class="nav-link" href="journal-humeur.html" title="Journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><span class="nav-label">Journal</span></a>
-  <a class="nav-link" href="livre-audela-des-etoiles.html" title="Livre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span class="nav-label">Livre</span></a>
-  <a class="nav-link" href="notifications.html" title="Rappels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="nav-label">Rappels</span></a>
-  <a class="nav-link active" href="import-export.html" title="Données"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg><span class="nav-label">Données</span></a>
+  <a class="nav-link" href="projets.html" title="Projets associatifs">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="8" width="6" height="13" rx="1"/><rect x="16" y="5" width="6" height="16" rx="1"/></svg>
+    <span class="nav-label">Projets</span>
+  </a>
+  <a class="nav-link" href="contacts-annuaire.html" title="Contacts">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span class="nav-label">Contacts</span>
+  </a>
+  <a class="nav-link" href="journal-humeur.html" title="Journal & Humeur">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+    <span class="nav-label">Journal</span>
+  </a>
+  <a class="nav-link" href="livre-audeladesetoiles.html" title="Mon Livre">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <span class="nav-label">Livre</span>
+  </a>
+  <a class="nav-link" href="notifications.html" title="Rappels">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span class="nav-label">Rappels</span>
+  </a>
+  <a class="nav-link active" href="import-export.html" title="Import / Export">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+    <span class="nav-label">Données</span>
+  </a>
 </nav>
 
+<!-- MAIN -->
 <main class="main">
   <div class="page-header">
     <div>
       <h1 class="page-title">Import / Export</h1>
-      <p class="page-subtitle">Sauvegarde, restaure et transfère tes données StudyHub</p>
+      <p class="page-subtitle">Sauvegarde, restaure et transfère toutes tes données StudyHub</p>
     </div>
   </div>
 
-  <!-- STORAGE STATUS -->
+  <!-- STOCKAGE -->
   <div class="storage-banner">
-    <div class="storage-banner-top">
-      <span class="storage-title">📦 Stockage local utilisé</span>
-      <span id="storage-used-lbl" style="font-family:'Syne',sans-serif;font-size:.8rem;color:var(--text-muted)">Calcul…</span>
+    <div class="storage-top">
+      <span class="storage-title">📦 Stockage localStorage</span>
+      <span id="storage-total" style="font-family:'Syne',sans-serif;font-size:.78rem;color:var(--text-muted)">Calcul…</span>
     </div>
     <div class="storage-grid" id="storage-grid"></div>
-    <div class="storage-bar"><div class="storage-bar-fill" id="storage-bar-fill" style="width:0%"></div></div>
-    <div class="storage-legend"><span id="storage-kb">0 Ko utilisés</span><span id="storage-pct">0% du quota estimé (5 Mo)</span></div>
+    <div class="storage-bar"><div class="storage-bar-fill" id="storage-fill" style="width:0%"></div></div>
+    <div class="storage-legend">
+      <span id="storage-kb">0 Ko</span>
+      <span id="storage-pct">0% du quota estimé (5 Mo)</span>
+    </div>
   </div>
 
-  <!-- CARDS GRID -->
+  <!-- ══ SAUVEGARDE GLOBALE ══ -->
+  <div class="sect">💾 Sauvegarde complète</div>
   <div class="ie-grid">
-
-    <!-- SAUVEGARDE COMPLÈTE -->
-    <div class="ie-card ie-card-full">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(0,229,255,.1);color:var(--cyan)">💾</div>
+    <div class="ie-card full">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(0,229,255,.1);color:var(--cyan)">💾</div>
         <div>
-          <div class="ie-card-title">Sauvegarde complète</div>
-          <div class="ie-card-desc">Exporte ou importe l'intégralité de tes données StudyHub dans un seul fichier JSON. Utilise ce fichier pour migrer sur un autre navigateur ou faire une sauvegarde régulière.</div>
+          <div class="card-title">Tout exporter / restaurer</div>
+          <div class="card-desc">Un seul fichier JSON contenant l'intégralité de tes données. Idéal pour migrer vers un autre navigateur ou faire une sauvegarde régulière. Tu peux aussi glisser-déposer un fichier de sauvegarde sur cette page.</div>
         </div>
       </div>
-      <div class="backup-preview" id="backup-preview">Chargement de l'aperçu…</div>
+      <div class="backup-preview" id="backup-preview">Chargement…</div>
       <div class="ie-actions">
         <button class="btn btn-primary" onclick="exportAll()">⬇️ Exporter tout (.json)</button>
         <label class="btn btn-ghost" style="cursor:pointer">
-          ⬆️ Importer une sauvegarde
+          ⬆️ Restaurer une sauvegarde
           <input type="file" accept=".json" style="display:none" onchange="importAll(this)">
         </label>
       </div>
     </div>
+  </div>
+
+  <!-- ══ VIE ÉTUDIANTE ══ -->
+  <div class="sect">📚 Vie étudiante</div>
+  <div class="ie-grid">
 
     <!-- TÂCHES -->
+    <!-- sh_tasks : [{id, title, desc, priority, subject, due, status, done, created}] -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(255,224,51,.1);color:var(--yellow)">✅</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(255,224,51,.1);color:var(--yellow)">✅</div>
         <div>
-          <div class="ie-card-title">Tâches</div>
-          <div class="ie-card-desc">Exporte tes tâches en JSON ou CSV (compatible Excel & Google Sheets).</div>
+          <div class="card-title">Tâches</div>
+          <div class="card-desc">Titre, description, priorité (haute/moyenne/basse), matière, date d'échéance, statut et état terminé.</div>
         </div>
       </div>
-      <div class="data-summary" id="tasks-summary"><span>📋 Tâches</span><span class="data-count" id="cnt-tasks">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_tasks</code> Tableau de tâches</span><span class="key-badge" id="b-tasks">0 tâche</span></div>
+      </div>
       <div class="ie-actions">
         <button class="btn btn-ghost" onclick="exportJSON('sh_tasks','taches')">JSON</button>
         <button class="btn btn-ghost" onclick="exportTasksCSV()">CSV</button>
@@ -115,15 +182,18 @@
     </div>
 
     <!-- AGENDA -->
+    <!-- sh_events : [{id, title, start, end, date, type, color, location, note}] -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(0,229,255,.1);color:var(--cyan)">📅</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(0,229,255,.1);color:var(--cyan)">📅</div>
         <div>
-          <div class="ie-card-title">Agenda</div>
-          <div class="ie-card-desc">Exporte tes événements en JSON ou au format iCal (.ics) pour Google Calendar / Apple Calendar.</div>
+          <div class="card-title">Agenda</div>
+          <div class="card-desc">Événements avec titre, date début/fin, type (Cours/TD/TP/Examen…), couleur, lieu et note. Export iCal compatible Google et Apple Calendar.</div>
         </div>
       </div>
-      <div class="data-summary"><span>📅 Événements</span><span class="data-count" id="cnt-events">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_events</code> Événements</span><span class="key-badge" id="b-events">0 événement</span></div>
+      </div>
       <div class="ie-actions">
         <button class="btn btn-ghost" onclick="exportJSON('sh_events','agenda')">JSON</button>
         <button class="btn btn-ghost" onclick="exportICS()">iCal (.ics)</button>
@@ -131,83 +201,114 @@
       </div>
     </div>
 
-    <!-- NOTES ACADÉMIQUES -->
+    <!-- NOTES & MATIÈRES -->
+    <!-- sh_matieres : [{id, name, emoji, coeff, prof, color, avg}]
+         sh_grades   : [{id, subjectId, name, value, coeff, date, comment}]
+         sh_notes_count : number -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(61,255,160,.1);color:var(--green)">📊</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(61,255,160,.1);color:var(--green)">📊</div>
         <div>
-          <div class="ie-card-title">Notes académiques</div>
-          <div class="ie-card-desc">Tes notes et matières exportables en JSON ou CSV pour les analyser dans Excel.</div>
+          <div class="card-title">Notes & Matières</div>
+          <div class="card-desc">Matières (nom, emoji, coefficient, prof, couleur) et notes (valeur/20, coefficient, date, commentaire). Export CSV prêt pour Excel.</div>
         </div>
       </div>
-      <div class="data-summary"><span>📊 Matières / Notes</span><span class="data-count" id="cnt-grades">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_matieres</code> Matières</span><span class="key-badge" id="b-matieres">0 matière</span></div>
+        <div class="key-row"><span><code>sh_grades</code> Notes individuelles</span><span class="key-badge" id="b-grades">0 note</span></div>
+        <div class="key-row"><span><code>sh_notes_count</code> Compteur</span><span class="key-badge" id="b-notes-count">0</span></div>
+      </div>
       <div class="ie-actions">
-        <button class="btn btn-ghost" onclick="exportJSON('sh_grades','notes-academiques')">JSON</button>
-        <button class="btn btn-ghost" onclick="exportGradesCSV()">CSV</button>
-        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_grades',this,'Notes')"></label>
+        <button class="btn btn-ghost" onclick="exportNotesBundle()">JSON (tout)</button>
+        <button class="btn btn-ghost" onclick="exportGradesCSV()">CSV notes</button>
+        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importNotesBundle(this)"></label>
       </div>
     </div>
 
     <!-- CARNET -->
+    <!-- sh_carnet_notes : [{id, title, content, tags, color, pinned, created, updated}] -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(181,110,255,.1);color:var(--violet)">✏️</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(181,110,255,.1);color:var(--violet)">✏️</div>
         <div>
-          <div class="ie-card-title">Carnet de notes</div>
-          <div class="ie-card-desc">Exporte tes notes rapides en JSON ou en Markdown (.md) lisible partout.</div>
+          <div class="card-title">Carnet de notes</div>
+          <div class="card-desc">Notes avec titre, contenu HTML formaté, tags, couleur, état épinglé, dates de création et modification.</div>
         </div>
       </div>
-      <div class="data-summary"><span>✏️ Notes</span><span class="data-count" id="cnt-carnet">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_carnet_notes</code> Notes rapides</span><span class="key-badge" id="b-carnet">0 note</span></div>
+      </div>
       <div class="ie-actions">
-        <button class="btn btn-ghost" onclick="exportJSON('sh_notes','carnet')">JSON</button>
+        <button class="btn btn-ghost" onclick="exportJSON('sh_carnet_notes','carnet')">JSON</button>
         <button class="btn btn-ghost" onclick="exportCarnetMD()">Markdown</button>
-        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_notes',this,'Carnet')"></label>
+        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_carnet_notes',this,'Carnet')"></label>
       </div>
     </div>
 
-    <!-- JOURNAL -->
+    <!-- POMODORO -->
+    <!-- sh_pomo_stats    : {sessions, minutes}
+         sh_pomo_settings : {work, short, long, cycle}
+         sh_streak        : string (number)
+         sh_last_active   : string (date ISO) -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(255,61,130,.1);color:var(--pink)">📓</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(255,61,130,.1);color:var(--pink)">🍅</div>
         <div>
-          <div class="ie-card-title">Journal & Humeur</div>
-          <div class="ie-card-desc">Tes entrées de journal exportées en JSON ou en texte brut formaté (.txt).</div>
+          <div class="card-title">Focus Pomodoro</div>
+          <div class="card-desc">Statistiques cumulées (sessions, minutes), paramètres (durées travail/pause), streak de jours actifs et date dernière activité.</div>
         </div>
       </div>
-      <div class="data-summary"><span>📓 Entrées</span><span class="data-count" id="cnt-journal">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_pomo_stats</code> Stats cumulées</span><span class="key-badge" id="b-pomo-stats">0 session</span></div>
+        <div class="key-row"><span><code>sh_pomo_settings</code> Paramètres</span><span class="key-badge" id="b-pomo-settings">—</span></div>
+        <div class="key-row"><span><code>sh_streak</code> Jours consécutifs</span><span class="key-badge" id="b-streak">0 jour</span></div>
+        <div class="key-row"><span><code>sh_last_active</code> Dernière activité</span><span class="key-badge" id="b-last-active">—</span></div>
+      </div>
       <div class="ie-actions">
-        <button class="btn btn-ghost" onclick="exportJSON('sh_journal','journal')">JSON</button>
-        <button class="btn btn-ghost" onclick="exportJournalTXT()">Texte (.txt)</button>
-        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_journal',this,'Journal')"></label>
+        <button class="btn btn-ghost" onclick="exportPomoBundle()">JSON (tout)</button>
+        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importPomoBundle(this)"></label>
       </div>
     </div>
+
+  </div>
+
+  <!-- ══ VIE ASSOCIATIVE ══ -->
+  <div class="sect">🤝 Vie associative</div>
+  <div class="ie-grid">
 
     <!-- PROJETS -->
+    <!-- sh_projects : [{id, name, desc, status, deadline, asso, resp, color, steps:[{id,text,done}]}] -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(255,122,61,.1);color:var(--orange)">🗂</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(255,122,61,.1);color:var(--orange)">🗂</div>
         <div>
-          <div class="ie-card-title">Projets associatifs</div>
-          <div class="ie-card-desc">Tes projets Kanban avec toutes leurs étapes et métadonnées.</div>
+          <div class="card-title">Projets associatifs</div>
+          <div class="card-desc">Projets Kanban avec nom, statut (à faire/en cours/révision/terminé), deadline, responsable, association, couleur et étapes.</div>
         </div>
       </div>
-      <div class="data-summary"><span>🗂 Projets</span><span class="data-count" id="cnt-projets">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_projects</code> Projets</span><span class="key-badge" id="b-projects">0 projet</span></div>
+      </div>
       <div class="ie-actions">
         <button class="btn btn-ghost" onclick="exportJSON('sh_projects','projets')">JSON</button>
+        <button class="btn btn-ghost" onclick="exportProjectsCSV()">CSV</button>
         <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_projects',this,'Projets')"></label>
       </div>
     </div>
 
     <!-- CONTACTS -->
+    <!-- sh_contacts : [{id, first, last, role, asso, email, phone, social, note, color}] -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(0,229,255,.1);color:var(--cyan)">👥</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(0,229,255,.1);color:var(--cyan)">👥</div>
         <div>
-          <div class="ie-card-title">Contacts & Annuaire</div>
-          <div class="ie-card-desc">Ton répertoire associatif et personnel exporté en JSON ou CSV.</div>
+          <div class="card-title">Contacts & Annuaire</div>
+          <div class="card-desc">Contacts avec prénom, nom, rôle, association, email, téléphone, réseau social et note. Export CSV compatible tout tableur.</div>
         </div>
       </div>
-      <div class="data-summary"><span>👥 Contacts</span><span class="data-count" id="cnt-contacts">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_contacts</code> Contacts</span><span class="key-badge" id="b-contacts">0 contact</span></div>
+      </div>
       <div class="ie-actions">
         <button class="btn btn-ghost" onclick="exportJSON('sh_contacts','contacts')">JSON</button>
         <button class="btn btn-ghost" onclick="exportContactsCSV()">CSV</button>
@@ -215,225 +316,478 @@
       </div>
     </div>
 
-    <!-- LIVRE -->
+  </div>
+
+  <!-- ══ VIE PERSONNELLE ══ -->
+  <div class="sect">🙋 Vie personnelle</div>
+  <div class="ie-grid">
+
+    <!-- JOURNAL -->
+    <!-- sh_journal : [{id, date, mood, tags, text, words}] -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(245,158,11,.1);color:#f59e0b">✨</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(255,61,130,.1);color:var(--pink)">📓</div>
         <div>
-          <div class="ie-card-title">Au-delà des étoiles</div>
-          <div class="ie-card-desc">Exporte ton manuscrit complet en JSON ou en texte brut chapitre par chapitre.</div>
+          <div class="card-title">Journal & Humeur</div>
+          <div class="card-desc">Entrées quotidiennes avec date, humeur (1–5 😞→😄), tags libres et texte. Export texte brut formaté.</div>
         </div>
       </div>
-      <div class="data-summary" id="livre-summary"><span>✨ Chapitres</span><span class="data-count" id="cnt-livre">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_journal</code> Entrées journal</span><span class="key-badge" id="b-journal">0 entrée</span></div>
+      </div>
       <div class="ie-actions">
-        <button class="btn btn-ghost" onclick="exportJSON('sh_livre','livre')">JSON</button>
+        <button class="btn btn-ghost" onclick="exportJSON('sh_journal','journal')">JSON</button>
+        <button class="btn btn-ghost" onclick="exportJournalTXT()">Texte (.txt)</button>
+        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_journal',this,'Journal')"></label>
+      </div>
+    </div>
+
+    <!-- LIVRE -->
+    <!-- sh_library : { books:[{id, title, subtitle, genre, goal, synopsis,
+                                chapters:[{id,title,text,notes}],
+                                characters:[{id,name,role,desc}],
+                                wordsByDay:{}}] }
+         sh_livre   : ancien format (migré automatiquement) -->
+    <div class="ie-card">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(245,158,11,.1);color:#f59e0b">✨</div>
+        <div>
+          <div class="card-title">Bibliothèque — Mes livres</div>
+          <div class="card-desc">Livres avec titre, genre, objectif de mots, synopsis, chapitres (texte + notes), personnages et progression quotidienne.</div>
+        </div>
+      </div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_library</code> Bibliothèque (format actuel)</span><span class="key-badge" id="b-library">0 livre</span></div>
+        <div class="key-row"><span><code>sh_livre</code> Ancien format (rétrocompat.)</span><span class="key-badge" id="b-livre">—</span></div>
+      </div>
+      <div class="ie-actions">
+        <button class="btn btn-ghost" onclick="exportJSON('sh_library','bibliotheque')">JSON</button>
         <button class="btn btn-ghost" onclick="exportLivreTXT()">Texte complet</button>
-        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_livre',this,'Livre')"></label>
+        <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_library',this,'Bibliothèque')"></label>
       </div>
     </div>
 
     <!-- RAPPELS -->
+    <!-- sh_reminders : [{id, title, datetime, cat, repeat, color, done}] -->
     <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(255,224,51,.1);color:var(--yellow)">🔔</div>
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(255,224,51,.1);color:var(--yellow)">🔔</div>
         <div>
-          <div class="ie-card-title">Rappels & Notifications</div>
-          <div class="ie-card-desc">Tes rappels programmés exportés en JSON.</div>
+          <div class="card-title">Rappels & Notifications</div>
+          <div class="card-desc">Rappels avec titre, date/heure, catégorie (cours/devoir/asso/perso), répétition et état terminé.</div>
         </div>
       </div>
-      <div class="data-summary"><span>🔔 Rappels</span><span class="data-count" id="cnt-reminders">0</span></div>
+      <div class="key-rows">
+        <div class="key-row"><span><code>sh_reminders</code> Rappels</span><span class="key-badge" id="b-reminders">0 rappel</span></div>
+      </div>
       <div class="ie-actions">
         <button class="btn btn-ghost" onclick="exportJSON('sh_reminders','rappels')">JSON</button>
+        <button class="btn btn-ghost" onclick="exportRemindersCSV()">CSV</button>
         <label class="btn btn-ghost" style="cursor:pointer">Importer <input type="file" accept=".json" style="display:none" onchange="importKey('sh_reminders',this,'Rappels')"></label>
       </div>
     </div>
 
-    <!-- RÉINITIALISATION -->
-    <div class="ie-card">
-      <div class="ie-card-header">
-        <div class="ie-icon" style="background:rgba(239,68,68,.1);color:#ef4444">⚠️</div>
+  </div>
+
+  <!-- ══ DANGER ZONE ══ -->
+  <div class="sect">⚠️ Danger zone</div>
+  <div class="ie-grid">
+    <div class="ie-card full">
+      <div class="card-head">
+        <div class="card-icon" style="background:rgba(239,68,68,.1);color:#ef4444">🗑</div>
         <div>
-          <div class="ie-card-title">Réinitialisation</div>
-          <div class="ie-card-desc">Supprime définitivement tout ou partie des données stockées dans ce navigateur.</div>
+          <div class="card-title">Réinitialisation complète</div>
+          <div class="card-desc">Supprime définitivement toutes les données StudyHub stockées dans ce navigateur. Cette action est irréversible.</div>
         </div>
       </div>
-      <div class="danger-box">⚠️ Ces actions sont <strong>irréversibles</strong>. Exporte d'abord une sauvegarde complète avant de continuer.</div>
+      <div class="danger-box">⚠️ <strong>Attention :</strong> seront supprimées — tâches, agenda, matières, notes, carnet, sessions Pomodoro, projets, contacts, journal, livres, rappels et tous les paramètres. Exporte une sauvegarde complète avant de continuer.</div>
       <div class="ie-actions">
         <button class="btn btn-danger" onclick="resetAll()">🗑 Tout réinitialiser</button>
+        <button class="btn btn-ghost" onclick="exportAll()">💾 Sauvegarder d'abord</button>
       </div>
     </div>
-
   </div>
+
 </main>
 
 <div class="toast" id="toast"><span id="toast-msg"></span></div>
 
 <script>
-const DATA_KEYS = {
-  sh_tasks:     { label:'Tâches',             icon:'✅', color:'var(--yellow)' },
-  sh_events:    { label:'Agenda',             icon:'📅', color:'var(--cyan)'   },
-  sh_grades:    { label:'Notes académiques',  icon:'📊', color:'var(--green)'  },
-  sh_notes:     { label:'Carnet',             icon:'✏️', color:'var(--violet)' },
-  sh_journal:   { label:'Journal',            icon:'📓', color:'var(--pink)'   },
-  sh_projects:  { label:'Projets',            icon:'🗂',  color:'var(--orange)' },
-  sh_contacts:  { label:'Contacts',           icon:'👥', color:'var(--cyan)'   },
-  sh_reminders: { label:'Rappels',            icon:'🔔', color:'var(--yellow)' },
-  sh_livre:     { label:'Livre',              icon:'✨', color:'#f59e0b'       }
+// ── Toutes les clés localStorage de la plateforme ──
+const ALL_KEYS = {
+  // Vie étudiante
+  sh_tasks:        { label:'Tâches',             icon:'✅', color:'var(--yellow)' },
+  sh_events:       { label:'Agenda',             icon:'📅', color:'var(--cyan)'   },
+  sh_matieres:     { label:'Matières',           icon:'📚', color:'var(--green)'  },
+  sh_grades:       { label:'Notes académiques',  icon:'📊', color:'var(--green)'  },
+  sh_notes_count:  { label:'Compteur notes',     icon:'🔢', color:'var(--green)'  },
+  sh_carnet_notes: { label:'Carnet',             icon:'✏️', color:'var(--violet)' },
+  sh_pomo_stats:   { label:'Pomo stats',         icon:'🍅', color:'var(--pink)'   },
+  sh_pomo_settings:{ label:'Pomo settings',      icon:'⚙️', color:'var(--pink)'   },
+  sh_streak:       { label:'Streak',             icon:'🔥', color:'var(--orange)' },
+  sh_last_active:  { label:'Dernière activité',  icon:'📆', color:'var(--orange)' },
+  // Vie associative
+  sh_projects:     { label:'Projets',            icon:'🗂',  color:'var(--orange)' },
+  sh_contacts:     { label:'Contacts',           icon:'👥', color:'var(--cyan)'   },
+  // Vie personnelle
+  sh_journal:      { label:'Journal',            icon:'📓', color:'var(--pink)'   },
+  sh_library:      { label:'Bibliothèque',       icon:'✨', color:'#f59e0b'       },
+  sh_livre:        { label:'Livre (legacy)',      icon:'📖', color:'#f59e0b'       },
+  sh_reminders:    { label:'Rappels',            icon:'🔔', color:'var(--yellow)' },
 };
 
+// ── UTILITAIRES ──
 function toast(msg, err=false) {
-  const t=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
-  t.className='toast show'+(err?' error':''); setTimeout(()=>t.classList.remove('show'),3500);
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.className='toast show'+(err?' err':'');
+  setTimeout(()=>t.classList.remove('show'),3500);
 }
-function sizeKb(key){ return Math.round((localStorage.getItem(key)||'').length*2/1024); }
-function countOf(key){
-  try{const v=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(v))return v.length;if(v&&typeof v==='object')return Object.keys(v).length;return v?1:0;}catch{return 0;}
+function sizeKb(key) { return Math.round((localStorage.getItem(key)||'').length*2/1024); }
+function countOf(key) {
+  try {
+    const raw=localStorage.getItem(key); if(!raw) return 0;
+    const v=JSON.parse(raw);
+    if(Array.isArray(v)) return v.length;
+    if(v && typeof v==='object') {
+      if(v.books) return v.books.length;         // sh_library
+      if(v.sessions!==undefined) return v.sessions; // sh_pomo_stats
+      return Object.keys(v).length;
+    }
+    if(typeof v==='number') return v;
+    return 1;
+  } catch { return 0; }
 }
-
-function renderStorage(){
-  const grid=document.getElementById('storage-grid');
-  let total=0;
-  grid.innerHTML=Object.entries(DATA_KEYS).map(([key,meta])=>{
-    const kb=sizeKb(key); total+=kb; const cnt=countOf(key);
-    return`<div class="storage-item"><div class="si-name">${meta.icon} ${meta.label}</div><div class="si-size" style="color:${meta.color}">${kb} Ko</div><div class="si-count">${cnt} élément${cnt>1?'s':''}</div></div>`;
-  }).join('');
-  const pct=Math.min(100,Math.round(total/5120*100));
-  document.getElementById('storage-bar-fill').style.width=pct+'%';
-  document.getElementById('storage-kb').textContent=total+' Ko utilisés';
-  document.getElementById('storage-pct').textContent=pct+'% du quota estimé (5 Mo)';
-  document.getElementById('storage-used-lbl').textContent=total+' Ko / 5 120 Ko';
-
-  // Counters
-  document.getElementById('cnt-tasks').textContent     = countOf('sh_tasks')+' tâche'+(countOf('sh_tasks')>1?'s':'');
-  document.getElementById('cnt-events').textContent    = countOf('sh_events')+' événement'+(countOf('sh_events')>1?'s':'');
-  document.getElementById('cnt-grades').textContent    = countOf('sh_grades')+' entrée'+(countOf('sh_grades')>1?'s':'');
-  document.getElementById('cnt-carnet').textContent    = countOf('sh_notes')+' note'+(countOf('sh_notes')>1?'s':'');
-  document.getElementById('cnt-journal').textContent   = countOf('sh_journal')+' entrée'+(countOf('sh_journal')>1?'s':'');
-  document.getElementById('cnt-projets').textContent   = countOf('sh_projects')+' projet'+(countOf('sh_projects')>1?'s':'');
-  document.getElementById('cnt-contacts').textContent  = countOf('sh_contacts')+' contact'+(countOf('sh_contacts')>1?'s':'');
-  document.getElementById('cnt-reminders').textContent = countOf('sh_reminders')+' rappel'+(countOf('sh_reminders')>1?'s':'');
-  const livre=JSON.parse(localStorage.getItem('sh_livre')||'{}');
-  const chapCnt=livre.chapters?livre.chapters.length:0;
-  document.getElementById('cnt-livre').textContent=chapCnt+' chapitre'+(chapCnt>1?'s':'');
-}
-
-function buildPreview(){
-  const data={};
-  Object.keys(DATA_KEYS).forEach(k=>{try{data[k]=JSON.parse(localStorage.getItem(k));}catch{}});
-  document.getElementById('backup-preview').textContent=JSON.stringify(data,null,2).substring(0,500)+'…';
-}
-
-function download(filename, content, mime='application/json'){
+function pl(n, word, wordP) { return n+' '+(n>1?(wordP||word+'s'):word); }
+function today() { return new Date().toISOString().substring(0,10); }
+function download(filename, content, mime='application/json') {
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([content],{type:mime}));
-  a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  a.download=filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 
-function exportAll(){
-  const data={_version:1,_date:new Date().toISOString(),_app:'StudyHub'};
-  Object.keys(DATA_KEYS).forEach(k=>{try{data[k]=JSON.parse(localStorage.getItem(k));}catch{}});
-  download('studyhub-backup-'+new Date().toISOString().substring(0,10)+'.json',JSON.stringify(data,null,2));
+// ── RENDU STOCKAGE ──
+function renderStorage() {
+  const grid=document.getElementById('storage-grid');
+  let total=0;
+  grid.innerHTML=Object.entries(ALL_KEYS).map(([key,meta])=>{
+    const kb=sizeKb(key); total+=kb;
+    const cnt=countOf(key);
+    return`<div class="si">
+      <div class="si-name">${meta.icon} ${meta.label}</div>
+      <div class="si-size" style="color:${meta.color}">${kb} Ko</div>
+      <div class="si-count">${cnt>0?cnt+' él.':'Vide'}</div>
+    </div>`;
+  }).join('');
+  const pct=Math.min(100,Math.round(total/5120*100));
+  document.getElementById('storage-fill').style.width=pct+'%';
+  document.getElementById('storage-kb').textContent=total+' Ko utilisés';
+  document.getElementById('storage-pct').textContent=pct+'% du quota estimé (5 Mo)';
+  document.getElementById('storage-total').textContent=total+' Ko / 5 120 Ko';
+
+  // Badges des cartes
+  document.getElementById('b-tasks').textContent     = pl(countOf('sh_tasks'),'tâche');
+  document.getElementById('b-events').textContent    = pl(countOf('sh_events'),'événement');
+  document.getElementById('b-matieres').textContent  = pl(countOf('sh_matieres'),'matière');
+  document.getElementById('b-grades').textContent    = pl(countOf('sh_grades'),'note');
+  document.getElementById('b-notes-count').textContent = (parseInt(localStorage.getItem('sh_notes_count')||'0'))+' note(s)';
+  document.getElementById('b-carnet').textContent    = pl(countOf('sh_carnet_notes'),'note');
+  const ps=JSON.parse(localStorage.getItem('sh_pomo_stats')||'{"sessions":0,"minutes":0}');
+  document.getElementById('b-pomo-stats').textContent = pl(ps.sessions,'session')+' · '+(ps.minutes||0)+' min';
+  const pset=JSON.parse(localStorage.getItem('sh_pomo_settings')||'null');
+  document.getElementById('b-pomo-settings').textContent = pset ? `${pset.work}min travail · ${pset.short}min pause` : 'Défaut (25/5/15)';
+  document.getElementById('b-streak').textContent    = pl(parseInt(localStorage.getItem('sh_streak')||'0'),'jour');
+  const la=localStorage.getItem('sh_last_active');
+  document.getElementById('b-last-active').textContent = la ? new Date(la+'T12:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}) : '—';
+  document.getElementById('b-projects').textContent  = pl(countOf('sh_projects'),'projet');
+  document.getElementById('b-contacts').textContent  = pl(countOf('sh_contacts'),'contact');
+  document.getElementById('b-journal').textContent   = pl(countOf('sh_journal'),'entrée');
+  const lib=JSON.parse(localStorage.getItem('sh_library')||'{"books":[]}');
+  const livres=lib.books||[];
+  document.getElementById('b-library').textContent = pl(livres.length,'livre');
+  const totalMots=livres.reduce((s,b)=>(b.chapters||[]).reduce((ss,c)=>ss+(c.text||'').trim().split(/\s+/).filter(Boolean).length,s),0);
+  document.getElementById('b-library').textContent += ' · '+totalMots.toLocaleString('fr-FR')+' mots';
+  document.getElementById('b-livre').textContent    = localStorage.getItem('sh_livre') ? 'Présent (migré)' : 'Absent';
+  document.getElementById('b-reminders').textContent = pl(countOf('sh_reminders'),'rappel');
+}
+
+// ── APERÇU BACKUP ──
+function buildPreview() {
+  const data={};
+  Object.keys(ALL_KEYS).forEach(k=>{try{const v=localStorage.getItem(k);if(v)data[k]=JSON.parse(v);}catch{}});
+  const json=JSON.stringify(data,null,2);
+  document.getElementById('backup-preview').textContent=
+    Object.keys(data).length===0 ? '// Aucune donnée enregistrée pour l\'instant.' :
+    json.length>600 ? json.substring(0,600)+'…' : json;
+}
+
+// ── EXPORT / IMPORT COMPLET ──
+function exportAll() {
+  const data={_version:3,_date:new Date().toISOString(),_app:'StudyHub'};
+  Object.keys(ALL_KEYS).forEach(k=>{try{const v=localStorage.getItem(k);if(v)data[k]=JSON.parse(v);}catch{}});
+  download('studyhub-backup-'+today()+'.json',JSON.stringify(data,null,2));
   toast('✅ Sauvegarde complète exportée !');
 }
-
-function importAll(input){
+function importAll(input) {
   const f=input.files[0]; if(!f)return;
   const r=new FileReader();
   r.onload=e=>{
     try{
       const data=JSON.parse(e.target.result);
       if(!confirm('⚠️ Cela remplacera TOUTES tes données actuelles. Continuer ?'))return;
-      Object.keys(DATA_KEYS).forEach(k=>{if(data[k]!==undefined)localStorage.setItem(k,JSON.stringify(data[k]));});
-      toast('✅ Données importées ! Actualise les autres pages.'); renderStorage(); buildPreview();
+      Object.keys(ALL_KEYS).forEach(k=>{if(data[k]!==undefined)localStorage.setItem(k,JSON.stringify(data[k]));});
+      toast('✅ Données restaurées ! Actualise les autres pages.');
+      renderStorage(); buildPreview();
     }catch{toast('❌ Fichier invalide ou corrompu',true);}
   };
   r.readAsText(f);
 }
 
-function exportJSON(key,name){
-  download('studyhub-'+name+'-'+new Date().toISOString().substring(0,10)+'.json', localStorage.getItem(key)||'[]');
-  toast('✅ '+name+' exporté(e) en JSON');
+// ── IMPORT / EXPORT CLÉ UNIQUE ──
+function exportJSON(key,name) {
+  const data=localStorage.getItem(key)||'[]';
+  download('studyhub-'+name+'-'+today()+'.json',data);
+  toast('✅ '+name+' exporté en JSON');
 }
-
-function importKey(key,input,label){
+function importKey(key,input,label) {
   const f=input.files[0]; if(!f)return;
   const r=new FileReader();
   r.onload=e=>{
-    try{JSON.parse(e.target.result);if(!confirm('Remplacer les données "'+label+'" actuelles ?'))return;localStorage.setItem(key,e.target.result);toast('✅ '+label+' importé(e) !');renderStorage();}
-    catch{toast('❌ Fichier JSON invalide',true);}
+    try{
+      JSON.parse(e.target.result);
+      if(!confirm('Remplacer les données "'+label+'" actuelles ?'))return;
+      localStorage.setItem(key,e.target.result);
+      toast('✅ '+label+' importé !'); renderStorage();
+    }catch{toast('❌ JSON invalide',true);}
   };
   r.readAsText(f);
 }
 
-function exportTasksCSV(){
+// ── TÂCHES CSV ──
+// {id, title, desc, priority, subject, due, status, done, created}
+function exportTasksCSV() {
   const tasks=JSON.parse(localStorage.getItem('sh_tasks')||'[]');
-  const rows=[['Titre','Description','Priorité','Matière','Échéance','Statut']];
-  tasks.forEach(t=>rows.push([t.title||'',t.desc||'',t.priority||'',t.subject||'',t.deadline||'',t.status||'']));
-  download('taches.csv','\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
+  const rows=[['ID','Titre','Description','Priorité','Matière','Échéance','Statut','Terminée','Créée le']];
+  tasks.forEach(t=>rows.push([
+    t.id||'', t.title||'', t.desc||'',
+    t.priority||'', t.subject||'', t.due||'',
+    t.status||'', t.done?'oui':'non',
+    t.created ? new Date(t.created).toLocaleDateString('fr-FR') : ''
+  ]));
+  download('taches-'+today()+'.csv','\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
   toast('✅ Tâches exportées en CSV');
 }
 
-function exportGradesCSV(){
-  const grades=JSON.parse(localStorage.getItem('sh_grades')||'[]');
-  const rows=[['Matière','Évaluation','Note','Coefficient','Date']];
-  grades.forEach(g=>rows.push([g.subject||'',g.label||'',g.value||'',g.coef||'',g.date||'']));
-  download('notes.csv','\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
-  toast('✅ Notes exportées en CSV');
-}
-
-function exportContactsCSV(){
-  const contacts=JSON.parse(localStorage.getItem('sh_contacts')||'[]');
-  const rows=[['Prénom','Nom','Rôle','Association','Email','Téléphone','Réseau','Note']];
-  contacts.forEach(c=>rows.push([c.first||'',c.last||'',c.role||'',c.asso||'',c.email||'',c.phone||'',c.social||'',c.note||'']));
-  download('contacts.csv','\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
-  toast('✅ Contacts exportés en CSV');
-}
-
-function exportCarnetMD(){
-  const notes=JSON.parse(localStorage.getItem('sh_notes')||'[]');
-  let md='# Carnet de notes — StudyHub\n\nExport du '+new Date().toLocaleDateString('fr-FR')+'\n\n---\n\n';
-  notes.forEach(n=>{md+=`## ${n.title||'Sans titre'}\n\n${n.content||''}\n\n---\n\n`;});
-  download('carnet.md',md,'text/markdown');
-  toast('✅ Carnet exporté en Markdown');
-}
-
-function exportJournalTXT(){
-  const entries=JSON.parse(localStorage.getItem('sh_journal')||'[]').sort((a,b)=>new Date(a.date)-new Date(b.date));
-  const moods={5:'😄 Excellent',4:'🙂 Bien',3:'😐 Neutre',2:'😕 Bof',1:'😞 Difficile'};
-  let txt='JOURNAL — STUDYHUB\nExport du '+new Date().toLocaleDateString('fr-FR')+'\n'+'='.repeat(40)+'\n\n';
-  entries.forEach(e=>{txt+=new Date(e.date+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'\nHumeur : '+(moods[e.mood]||'—')+'\nTags : '+((e.tags||[]).join(', ')||'—')+'\n\n'+(e.text||'')+'\n\n'+'—'.repeat(40)+'\n\n';});
-  download('journal.txt',txt,'text/plain');
-  toast('✅ Journal exporté en texte');
-}
-
-function exportLivreTXT(){
-  const livre=JSON.parse(localStorage.getItem('sh_livre')||'{}');
-  let txt='AU-DELÀ DES ÉTOILES\n'+'═'.repeat(40)+'\n\n';
-  (livre.chapters||[]).forEach((c,i)=>{txt+='CHAPITRE '+(i+1)+' — '+(c.title||'Sans titre')+'\n'+'─'.repeat(40)+'\n\n'+(c.text||'')+'\n\n\n';});
-  download('au-dela-des-etoiles.txt',txt,'text/plain');
-  toast('✅ Livre exporté en texte');
-}
-
-function exportICS(){
+// ── AGENDA iCAL ──
+// {id, title, start, end, date, type, color, location, note}
+function exportICS() {
   const events=JSON.parse(localStorage.getItem('sh_events')||'[]');
-  let ics='BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyHub//FR\n';
-  events.forEach(ev=>{if(!ev.start)return;const dt=d=>d.replace(/[-:]/g,'').replace('T','T').substring(0,15)+'00Z';ics+='BEGIN:VEVENT\nSUMMARY:'+(ev.title||'')+'\nDTSTART:'+dt(ev.start)+'\nDTEND:'+dt(ev.end||ev.start)+'\nDESCRIPTION:'+(ev.note||'')+'\nLOCATION:'+(ev.location||'')+'\nEND:VEVENT\n';});
+  let ics='BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyHub//FR\nCALSCALE:GREGORIAN\n';
+  events.forEach(ev=>{
+    const s=ev.start||ev.date; if(!s)return;
+    const e=ev.end||s;
+    const fmt=d=>{
+      try{ return d.replace(/[-:]/g,'').replace('T','T').substring(0,15)+'00Z'; }
+      catch{ return ''; }
+    };
+    ics+=`BEGIN:VEVENT\nUID:${ev.id||Date.now()}@studyhub\nSUMMARY:${(ev.title||'').replace(/[,;\\]/g,' ')}\nDTSTART:${fmt(s)}\nDTEND:${fmt(e)}\nDESCRIPTION:${(ev.note||'').replace(/\n/g,'\\n').replace(/[,;]/g,' ')}\nLOCATION:${(ev.location||'').replace(/[,;]/g,' ')}\nCATEGORIES:${ev.type||'Cours'}\nEND:VEVENT\n`;
+  });
   ics+='END:VCALENDAR';
-  download('agenda-studyhub.ics',ics,'text/calendar');
+  download('agenda-studyhub-'+today()+'.ics',ics,'text/calendar');
   toast('✅ Agenda exporté en iCal');
 }
 
-function resetAll(){
-  if(!confirm('⚠️ ATTENTION : toutes tes données StudyHub seront supprimées définitivement. Es-tu sûr(e) ?'))return;
-  if(!confirm('Dernière confirmation — supprimer toutes les données ?'))return;
-  Object.keys(DATA_KEYS).forEach(k=>localStorage.removeItem(k));
-  toast('🗑 Toutes les données ont été supprimées.'); renderStorage(); buildPreview();
+// ── NOTES & MATIÈRES BUNDLE ──
+// sh_matieres: [{id, name, emoji, coeff, prof, color, avg}]
+// sh_grades  : [{id, subjectId, name, value, coeff, date, comment}]
+function exportNotesBundle() {
+  const bundle={
+    matieres:    JSON.parse(localStorage.getItem('sh_matieres')||'[]'),
+    grades:      JSON.parse(localStorage.getItem('sh_grades')||'[]'),
+    notes_count: parseInt(localStorage.getItem('sh_notes_count')||'0')
+  };
+  download('notes-matieres-'+today()+'.json',JSON.stringify(bundle,null,2));
+  toast('✅ Notes & matières exportées');
+}
+function importNotesBundle(input) {
+  const f=input.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const b=JSON.parse(e.target.result);
+      if(!confirm('Remplacer tes notes et matières actuelles ?'))return;
+      if(b.matieres!==undefined) localStorage.setItem('sh_matieres',JSON.stringify(b.matieres));
+      if(b.grades!==undefined)   localStorage.setItem('sh_grades',JSON.stringify(b.grades));
+      if(b.notes_count!==undefined) localStorage.setItem('sh_notes_count',String(b.notes_count));
+      toast('✅ Notes & matières importées !'); renderStorage();
+    }catch{toast('❌ Fichier invalide',true);}
+  };
+  r.readAsText(f);
+}
+function exportGradesCSV() {
+  const matieres=JSON.parse(localStorage.getItem('sh_matieres')||'[]');
+  const grades=JSON.parse(localStorage.getItem('sh_grades')||'[]');
+  const nameMap={}; matieres.forEach(m=>nameMap[m.id]=m.name);
+  const rows=[['Matière','Intitulé','Note /20','Coefficient','Date','Commentaire']];
+  grades.forEach(g=>rows.push([
+    nameMap[g.subjectId]||g.subjectId||'', g.name||'',
+    g.value!==undefined?g.value:'', g.coeff!==undefined?g.coeff:1,
+    g.date||'', g.comment||''
+  ]));
+  download('notes-'+today()+'.csv','\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
+  toast('✅ Notes exportées en CSV');
 }
 
-// Drag & drop global
-document.addEventListener('dragover',e=>e.preventDefault());
-document.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f&&f.name.endsWith('.json')){const input={files:[f]};importAll(input);}});
+// ── CARNET MARKDOWN ──
+// {id, title, content (HTML), tags, color, pinned, created, updated}
+function exportCarnetMD() {
+  const notes=JSON.parse(localStorage.getItem('sh_carnet_notes')||'[]');
+  let md='# Carnet de notes — StudyHub\n\nExport du '+new Date().toLocaleDateString('fr-FR')+'\n\n---\n\n';
+  notes.forEach(n=>{
+    const clean=(n.content||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    md+=`## ${n.title||'Sans titre'}${n.pinned?' 📌':''}\n`;
+    if(n.tags&&n.tags.length) md+=`*Tags : ${n.tags.join(', ')}*\n`;
+    md+=`\n${clean}\n\n---\n\n`;
+  });
+  download('carnet-'+today()+'.md',md,'text/markdown');
+  toast('✅ Carnet exporté en Markdown');
+}
 
+// ── POMODORO BUNDLE ──
+// sh_pomo_stats   : {sessions, minutes}
+// sh_pomo_settings: {work, short, long, cycle}
+// sh_streak       : string number
+// sh_last_active  : string date
+function exportPomoBundle() {
+  const bundle={
+    stats:       JSON.parse(localStorage.getItem('sh_pomo_stats')||'{"sessions":0,"minutes":0}'),
+    settings:    JSON.parse(localStorage.getItem('sh_pomo_settings')||'{"work":25,"short":5,"long":15,"cycle":4}'),
+    streak:      parseInt(localStorage.getItem('sh_streak')||'0'),
+    last_active: localStorage.getItem('sh_last_active')||''
+  };
+  download('pomodoro-'+today()+'.json',JSON.stringify(bundle,null,2));
+  toast('✅ Données Pomodoro exportées');
+}
+function importPomoBundle(input) {
+  const f=input.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const b=JSON.parse(e.target.result);
+      if(!confirm('Remplacer tes données Pomodoro actuelles ?'))return;
+      if(b.stats!==undefined)       localStorage.setItem('sh_pomo_stats',JSON.stringify(b.stats));
+      if(b.settings!==undefined)    localStorage.setItem('sh_pomo_settings',JSON.stringify(b.settings));
+      if(b.streak!==undefined)      localStorage.setItem('sh_streak',String(b.streak));
+      if(b.last_active!==undefined) localStorage.setItem('sh_last_active',b.last_active);
+      toast('✅ Données Pomodoro importées !'); renderStorage();
+    }catch{toast('❌ Fichier invalide',true);}
+  };
+  r.readAsText(f);
+}
+
+// ── PROJETS CSV ──
+// {id, name, desc, status, deadline, asso, resp, color, steps:[{id,text,done}]}
+function exportProjectsCSV() {
+  const projs=JSON.parse(localStorage.getItem('sh_projects')||'[]');
+  const rows=[['Nom','Association','Responsable','Statut','Deadline','Étapes totales','Étapes terminées','Description']];
+  projs.forEach(p=>{
+    const tot=p.steps?p.steps.length:0;
+    const done=p.steps?p.steps.filter(s=>s.done).length:0;
+    rows.push([p.name||'',p.asso||'',p.resp||'',p.status||'',p.deadline||'',tot,done,p.desc||'']);
+  });
+  download('projets-'+today()+'.csv','\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
+  toast('✅ Projets exportés en CSV');
+}
+
+// ── CONTACTS CSV ──
+// {id, first, last, role, asso, email, phone, social, note, color}
+function exportContactsCSV() {
+  const contacts=JSON.parse(localStorage.getItem('sh_contacts')||'[]');
+  const rows=[['Prénom','Nom','Rôle','Association','Email','Téléphone','Réseau social','Note']];
+  contacts.forEach(c=>rows.push([c.first||'',c.last||'',c.role||'',c.asso||'',c.email||'',c.phone||'',c.social||'',c.note||'']));
+  download('contacts-'+today()+'.csv','\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
+  toast('✅ Contacts exportés en CSV');
+}
+
+// ── JOURNAL TXT ──
+// {id, date, mood, tags, text, words}
+function exportJournalTXT() {
+  const entries=JSON.parse(localStorage.getItem('sh_journal')||'[]').sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const moods={5:'😄 Excellent',4:'🙂 Bien',3:'😐 Neutre',2:'😕 Bof',1:'😞 Difficile'};
+  let txt='JOURNAL PERSONNEL — STUDYHUB\nExport du '+new Date().toLocaleDateString('fr-FR')+'\n'+'='.repeat(50)+'\n\n';
+  entries.forEach(e=>{
+    txt+=new Date(e.date+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'\n';
+    txt+='Humeur : '+(moods[e.mood]||'—')+'\n';
+    txt+='Tags : '+((e.tags||[]).join(', ')||'—')+'\n\n';
+    txt+=(e.text||'')+'\n\n'+'─'.repeat(50)+'\n\n';
+  });
+  download('journal-'+today()+'.txt',txt,'text/plain');
+  toast('✅ Journal exporté en texte');
+}
+
+// ── LIVRE TXT ──
+// sh_library.books[]: {title, genre, synopsis, chapters:[{title,text,notes}], characters:[{name,role,desc}]}
+function exportLivreTXT() {
+  const lib=JSON.parse(localStorage.getItem('sh_library')||'{"books":[]}');
+  const books=lib.books||[];
+  if(!books.length){ toast('⚠ Aucun livre à exporter',true); return; }
+  let txt='BIBLIOTHÈQUE — STUDYHUB\nExport du '+new Date().toLocaleDateString('fr-FR')+'\n\n';
+  books.forEach((bk,bi)=>{
+    txt+='═'.repeat(50)+'\n';
+    txt+=(bi+1)+'. '+bk.title.toUpperCase()+'\n';
+    if(bk.genre) txt+='Genre : '+bk.genre+'\n';
+    if(bk.synopsis) txt+='Synopsis : '+bk.synopsis+'\n';
+    txt+='═'.repeat(50)+'\n\n';
+    if(bk.characters&&bk.characters.length){
+      txt+='PERSONNAGES\n'+'─'.repeat(30)+'\n';
+      bk.characters.forEach(c=>txt+=`${c.name} (${c.role||'—'}) : ${c.desc||''}\n`);
+      txt+='\n';
+    }
+    (bk.chapters||[]).forEach((c,i)=>{
+      txt+='CHAPITRE '+(i+1)+' — '+(c.title||'Sans titre')+'\n'+'─'.repeat(50)+'\n\n';
+      txt+=(c.text||'')+'\n\n\n';
+    });
+  });
+  download('bibliotheque-'+today()+'.txt',txt,'text/plain');
+  toast('✅ Bibliothèque exportée en texte');
+}
+
+// ── RAPPELS CSV ──
+// {id, title, datetime, cat, repeat, color, done}
+function exportRemindersCSV() {
+  const reminders=JSON.parse(localStorage.getItem('sh_reminders')||'[]');
+  const cats={cours:'Cours/Examen',devoir:'Devoir/Rendu',asso:'Associatif',perso:'Personnel',autre:'Autre'};
+  const rows=[['Titre','Date/Heure','Catégorie','Répétition','Terminé']];
+  reminders.forEach(r=>rows.push([
+    r.title||'',
+    r.datetime ? new Date(r.datetime).toLocaleString('fr-FR') : '',
+    cats[r.cat]||r.cat||'',
+    r.repeat||'none',
+    r.done?'oui':'non'
+  ]));
+  download('rappels-'+today()+'.csv','\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
+  toast('✅ Rappels exportés en CSV');
+}
+
+// ── RESET ──
+function resetAll() {
+  if(!confirm('⚠️ Toutes tes données StudyHub seront supprimées définitivement. Es-tu sûr(e) ?'))return;
+  if(!confirm('Dernière confirmation — supprimer TOUTES les données ?'))return;
+  Object.keys(ALL_KEYS).forEach(k=>localStorage.removeItem(k));
+  toast('🗑 Toutes les données ont été supprimées.');
+  renderStorage(); buildPreview();
+}
+
+// ── DRAG & DROP ──
+document.addEventListener('dragover',e=>e.preventDefault());
+document.addEventListener('drop',e=>{
+  e.preventDefault();
+  const f=e.dataTransfer.files[0];
+  if(f&&f.name.endsWith('.json')){ const inp={files:[f]}; importAll(inp); }
+});
+
+// ── INIT ──
 renderStorage();
 buildPreview();
 </script>
