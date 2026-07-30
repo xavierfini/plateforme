@@ -1,3 +1,7 @@
+
+bash
+
+cat > /home/claude/livre.html << 'ENDOFFILE_XZ9'
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -47,6 +51,7 @@
 .book-toolbar input::placeholder { color: var(--text-muted); }
 .tb-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); padding: 5px 10px; border-radius: var(--radius-sm); font-size: .78rem; cursor: pointer; transition: all .2s; font-family: 'Syne', sans-serif; }
 .tb-btn:hover { color: var(--text); border-color: #f59e0b; }
+.tb-btn.active-tts { color: #f59e0b; border-color: #f59e0b; background: rgba(245,158,11,.1); }
 .tb-sep { width: 1px; height: 18px; background: var(--border); }
 .autosave { font-family: 'Syne', sans-serif; font-size: .72rem; color: var(--green); opacity: 0; transition: opacity .5s; }
 .autosave.show { opacity: 1; }
@@ -85,6 +90,28 @@
 .field input, .field textarea, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-size: .88rem; outline: none; font-family: 'Syne', sans-serif; }
 .field input:focus, .field textarea:focus, .field select:focus { border-color: #f59e0b; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+/* ══════ TTS PANEL ══════ */
+.tts-bar {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: rgba(245,158,11,.08);
+  border: 1px solid rgba(245,158,11,.3);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  margin: 0 20px 10px;
+  font-family: 'Syne', sans-serif;
+}
+.tts-bar.show { display: flex; }
+.tts-bar .tts-label { font-size: .72rem; color: #f59e0b; font-weight: 700; flex-shrink: 0; }
+.tts-bar .tts-progress-wrap { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.tts-bar .tts-progress-fill { height: 100%; width: 0%; background: #f59e0b; border-radius: 2px; transition: width .15s linear; }
+.tts-bar select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: .72rem; border-radius: var(--radius-sm); padding: 3px 6px; font-family: 'Syne', sans-serif; outline: none; max-width: 130px; }
+.tts-bar .tts-ctrl-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: .75rem; flex-shrink: 0; transition: all .2s; }
+.tts-bar .tts-ctrl-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+
+.tts-highlight { background: rgba(245,158,11,.25); border-radius: 2px; }
 
 /* ══════════════════════════════════════════════
    CONSTELLATION VIEW — par livre
@@ -398,8 +425,23 @@
         <button class="tb-btn" onclick="ins('—')">—</button>
         <button class="tb-btn" onclick="ins('\n\n* * *\n\n')">***</button>
         <div class="tb-sep"></div>
+        <button class="tb-btn" id="tts-toggle-btn" onclick="toggleTTS()" title="Écouter ce chapitre">🔊 Écouter</button>
         <button class="tb-btn" onclick="openEditBook()" title="Paramètres du livre">⚙</button>
         <span class="autosave" id="autosave-badge">✓ Sauvegardé</span>
+      </div>
+      <div class="tts-bar" id="tts-bar">
+        <span class="tts-label">🔊 Lecture</span>
+        <button class="tts-ctrl-btn" id="tts-play-pause" onclick="ttsPlayPause()" title="Lecture / Pause">⏸</button>
+        <button class="tts-ctrl-btn" onclick="ttsStop()" title="Arrêter">⏹</button>
+        <div class="tts-progress-wrap"><div class="tts-progress-fill" id="tts-progress-fill"></div></div>
+        <select id="tts-voice-select" onchange="onTtsVoiceChange()" title="Voix"></select>
+        <select id="tts-rate-select" onchange="onTtsRateChange()" title="Vitesse">
+          <option value="0.75">0.75x</option>
+          <option value="1" selected>1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
       </div>
       <div class="writing-area">
         <div class="page-wrap">
@@ -638,6 +680,7 @@ function openBook(id) {
 }
 
 function backToBooks() {
+  ttsStop();
   currentBookId = null; currentChapId = null;
   document.getElementById('view-books').style.display = 'flex';
   document.getElementById('view-chapters').style.display = 'none';
@@ -686,6 +729,7 @@ function renderChars() {
 }
 
 function loadChapter(id) {
+  ttsStop();
   const bk = currentBook(); if (!bk) return;
   currentChapId = id;
   const c = (bk.chapters||[]).find(x=>x.id===id); if (!c) return;
@@ -734,6 +778,117 @@ function ins(text) {
   ta.value=ta.value.substring(0,s)+text+ta.value.substring(e);
   ta.selectionStart=ta.selectionEnd=s+text.length;
   ta.focus(); onEditorInput();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── LECTURE AUDIO (Text-to-Speech) ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+const ttsState = { utter:null, playing:false, paused:false, voices:[], totalLen:0, rate:1 };
+
+function ttsInit() {
+  if (!('speechSynthesis' in window)) return;
+  function loadVoices() {
+    ttsState.voices = speechSynthesis.getVoices().filter(v=>v.lang && v.lang.toLowerCase().startsWith('fr'));
+    if (!ttsState.voices.length) ttsState.voices = speechSynthesis.getVoices();
+    const sel = document.getElementById('tts-voice-select');
+    if (!sel) return;
+    sel.innerHTML = ttsState.voices.map((v,i)=>`<option value="${i}">${v.name}</option>`).join('') || '<option>Voix par défaut</option>';
+  }
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+ttsInit();
+
+function cleanTextForSpeech(raw) {
+  return (raw||'')
+    .replace(/\*\*(.*?)\*\*/g,'$1')
+    .replace(/\*(.*?)\*/g,'$1')
+    .replace(/\* \* \*/g,'. ')
+    .replace(/—/g,', ')
+    .trim();
+}
+
+function toggleTTS() {
+  if (!('speechSynthesis' in window)) { alert("La lecture audio n'est pas prise en charge par ce navigateur."); return; }
+  if (ttsState.playing) { ttsStop(); return; }
+  const chap = currentChap();
+  if (!chap) return;
+  const title = document.getElementById('chap-title-input').value || 'Sans titre';
+  const text = cleanTextForSpeech(document.getElementById('book-editor').value);
+  const fullText = title + '. ' + text;
+  if (!text.trim()) { alert('Ce chapitre est vide, rien à écouter.'); return; }
+
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(fullText);
+  ttsState.totalLen = fullText.length;
+  const voiceIdx = document.getElementById('tts-voice-select')?.value;
+  if (voiceIdx !== undefined && ttsState.voices[voiceIdx]) {
+    utter.voice = ttsState.voices[voiceIdx];
+    utter.lang = ttsState.voices[voiceIdx].lang;
+  } else {
+    utter.lang = 'fr-FR';
+  }
+  utter.rate = parseFloat(document.getElementById('tts-rate-select')?.value || '1');
+  utter.pitch = 1;
+
+  utter.onboundary = (e) => {
+    if (e.charIndex != null && ttsState.totalLen) {
+      const pct = Math.min(100, Math.round((e.charIndex/ttsState.totalLen)*100));
+      const fill = document.getElementById('tts-progress-fill');
+      if (fill) fill.style.width = pct+'%';
+    }
+  };
+  utter.onend = () => { ttsStop(); };
+  utter.onerror = () => { ttsStop(); };
+
+  ttsState.utter = utter;
+  ttsState.playing = true;
+  ttsState.paused = false;
+  speechSynthesis.speak(utter);
+
+  document.getElementById('tts-bar').classList.add('show');
+  document.getElementById('tts-toggle-btn').classList.add('active-tts');
+  document.getElementById('tts-toggle-btn').textContent = '⏹ Arrêter';
+  document.getElementById('tts-play-pause').textContent = '⏸';
+}
+
+function ttsPlayPause() {
+  if (!ttsState.playing) return;
+  if (ttsState.paused) {
+    speechSynthesis.resume();
+    ttsState.paused = false;
+    document.getElementById('tts-play-pause').textContent = '⏸';
+  } else {
+    speechSynthesis.pause();
+    ttsState.paused = true;
+    document.getElementById('tts-play-pause').textContent = '▶';
+  }
+}
+
+function ttsStop() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  ttsState.playing = false;
+  ttsState.paused = false;
+  ttsState.utter = null;
+  const bar = document.getElementById('tts-bar');
+  const btn = document.getElementById('tts-toggle-btn');
+  const fill = document.getElementById('tts-progress-fill');
+  if (bar) bar.classList.remove('show');
+  if (btn) { btn.classList.remove('active-tts'); btn.textContent = '🔊 Écouter'; }
+  if (fill) fill.style.width = '0%';
+}
+
+function onTtsVoiceChange() {
+  if (ttsState.playing) toggleTTS(), toggleTTS();
+}
+function onTtsRateChange() {
+  ttsState.rate = parseFloat(document.getElementById('tts-rate-select').value);
+  if (ttsState.utter && ttsState.playing) {
+    const wasPlaying = !ttsState.paused;
+    ttsStop();
+    toggleTTS();
+    if (!wasPlaying) ttsPlayPause();
+  }
 }
 
 // ── MODALS LIVRE ──
